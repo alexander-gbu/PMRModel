@@ -6,21 +6,21 @@ clear;
 L = 0.07;
 
 T = 721.4064371;  %C
-T = T + 273.15 %K
+T = T + 273.15; %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
 % ch4; h20; co; co2; h2; ar
-sccm0 = [16.16; 48.48; 0; 0; 10; 5]
-mols0 = sccm0/22400 * 60
-y0 = mols0/sum(mols0)
-sumy0 = sum(y0)
-Ctot = P/(8.3144598 * 10^-2 * T)
-C0 = y0*Ctot
+sccm0 = [16.16; 48.48; 0; 0; 10; 5];
+mols0 = sccm0/22400 * 60;
+y0 = mols0/sum(mols0);
+sumy0 = sum(y0);
+Ctot = P/(8.3144598 * 10^-2 * T);
+C0 = y0*Ctot;
 
 u0 = sum(sccm0) * 273 / T * P / 1 / 60; %cm^3/sec
 A = pi() * (3.5/10)^2; %cm^2. I assumed a 7 mm diameter
-v0 = u0 / A / 2 / 100 %m/sec
+v0 = u0 / A / 2 / 100 %m/sec v0 = 0.0047
 
 Nx = 100;
 Nt = 200;
@@ -28,14 +28,16 @@ x = linspace(0,L,Nx); %length of reactor
 t = linspace(0,10,Nt); %time steps
 m = 0;
 C = pdepe(m,@pdefun,@icfun,@bcfun,x,t);
+
+T
  
-function [c,f,s] = pdefun(x,t,y,dCdx) %might have to change the C back to u if this thing starts freaking out
+function [c,f,s] = pdefun(x,t,y,dCdx) %#ok<*INUSD> %might have to change the C back to u if this thing starts freaking out
 	T = 900;
     L = 0.07;
 	ych40 = 0.2029;
 	v0 = 0.0047;
 	
-    v = (3*ych40 - 2*y(1,1))/ych40
+    v = v0*(3*ych40 - 2*y(1,1))/ych40
 	
 	nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %hydrogen removal ignored for now
 	R = rxneq(y, Keqsmrcalc(T), Keqwgscalc(T), T, L);
@@ -75,7 +77,7 @@ function R = rxneq(C, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 	Mc = 13; %13 mg
 	PR = 0.9; %90%
 	Psc = pi() * (2.5/10)^2 /(100^2); %make perimeter
-	Ku = (Am * Mc * PR) / (Psc * L);
+	Ku = (Am * Mc * PR) / (Psc * L); %current value with area calculation: Ku = 98.2213
 
 	I = 9; %curent in Amps
 	F = 96485; %faradays constant NEED TO ADJUST STILL

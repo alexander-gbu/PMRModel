@@ -12,7 +12,7 @@ M = [16, 18, 28, 44, 2, 40]; %g/mol
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
 %ch4; h20; co; co2; h2; ar
-sccm0 = [16.16; 48.48; 0; 0; 10; 5]
+sccm0 = [16.16; 48.48; 0; 0; 10; 5] %#ok<*NOPTS>
 mols0 = sccm0/22400 * 60
 y0 = mols0/sum(mols0)
 sumy0 = sum(y0)
@@ -28,7 +28,7 @@ v0 = u0 / A / 2 / 100 %m/sec
 % make it in terms of concentration
 
 zSpan = linspace(0,L);
-[z,y] = ode45(@(x,y) odefun(x, y, T, P, v0, C0, M, nu, L), zSpan, C0);
+[z,y] = ode45(@(x,y) odefun(x, y, T, P, v0, y0, nu, L), zSpan, C0);
 figure(1);
 plot(z, y, 'LineWidth', 6);
 legend('Cch4','Ch2o','Cco','Cco2','Ch2','Car'); %adjust this ...
@@ -42,15 +42,9 @@ out = y(end,:)*10^3
 'ch4; h2'
 [y(end, 1), y(end, 5)]
 
-%conversion calc now we just assume a constant velocity
-%X = (transpose(y0) - y(end,:))./transpose(y0) %methane should recalculat this actually
+function dydt = odefun(x, y, T, P, v0, y0, nu, L) %#ok<*INUSD>
 
-function dydt = odefun(x, y, T, P, v0, y0, M, nu, L)
-
-	rho0 = M*y0;
-	rhoz = M*y;
-	
-	v = rho0*v0/rhoz;
+	v = v0*(3*y0(1,1) - 2*y(1,1))/y0(1,1)
 	
 	Keqsmr = (101325/100000)^2 * exp(-26830/T + 30.114);
 	Keqwgs = exp(4400/T - 4.036);
@@ -80,7 +74,7 @@ function R = rxneq(C, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 	Mc = 13; %13 mg
 	PR = 0.9; %90%
 	Psc = pi() * (2.5/10)^2 /(100^2); %make perimeter
-	Ku = (Am * Mc * PR) / (Psc * L)
+	Ku = (Am * Mc * PR) / (Psc * L) %#ok<*NOPRT>
 
 	I = 9; %curent in Amps
 	F = 96485; %faradays constant NEED TO ADJUST STILL
@@ -91,38 +85,38 @@ function R = rxneq(C, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 	R(3,1) = I/(2*F*L); %removal of hydrogen is still off but works with a correction factor
 end
 
-function Keq = Keqsmrcalc(T)
+% function Keq = Keqsmrcalc(T)
 
-	R = 8.314; %J / mol·K
+% 	R = 8.314; %J / mol·K
 	
-	%CO2; CO; CH4; H2O; H2 = 00000
-	G_const = [-393.4685065	-0.003212871	1.53E-07	9.97E-10	-3.31E-13;
-	-110.7347984	-0.086473798	-9.63E-06	8.56E-09	-2.11E-12;
-	-68.77179183	0.038329957	9.22E-05	-5.46E-08	1.24E-11;
-	-240.6171143	0.035116356	2.02E-05	-9.33E-09	1.78E-12];
+% 	%CO2; CO; CH4; H2O; H2 = 00000
+% 	G_const = [-393.4685065	-0.003212871	1.53E-07	9.97E-10	-3.31E-13;
+% 	-110.7347984	-0.086473798	-9.63E-06	8.56E-09	-2.11E-12;
+% 	-68.77179183	0.038329957	9.22E-05	-5.46E-08	1.24E-11;
+% 	-240.6171143	0.035116356	2.02E-05	-9.33E-09	1.78E-12];
 	
-	Gf = zeros(1,4);
-	for i = 1:4
-        Gf(1,i) = G_const(i,1) + G_const(i,2)*T + G_const(i,3)*T^2 + G_const(i,4)*T^3 + G_const(i,5)*T^4;
-	end
-	Keq = exp(-(Gf(1,2) - Gf(1,3) - Gf(1,4))*1000/R/T);
+% 	Gf = zeros(1,4);
+% 	for i = 1:4
+%         Gf(1,i) = G_const(i,1) + G_const(i,2)*T + G_const(i,3)*T^2 + G_const(i,4)*T^3 + G_const(i,5)*T^4;
+% 	end
+% 	Keq = exp(-(Gf(1,2) - Gf(1,3) - Gf(1,4))*1000/R/T);
 	
-end
+% end
 
-function Keq = Keqwgscalc(T)
+% function Keq = Keqwgscalc(T)
 
-	R = 8.314; %J / mol·K
+% 	R = 8.314; %J / mol·K
 	
-	%%CO2; CO; CH4; H2O; H2 = 00000
-	G_const = [-393.4685065	-0.003212871	1.53E-07	9.97E-10	-3.31E-13;
-	-110.7347984	-0.086473798	-9.63E-06	8.56E-09	-2.11E-12;
-	-68.77179183	0.038329957	9.22E-05	-5.46E-08	1.24E-11;
-	-240.6171143	0.035116356	2.02E-05	-9.33E-09	1.78E-12];
+% 	%%CO2; CO; CH4; H2O; H2 = 00000
+% 	G_const = [-393.4685065	-0.003212871	1.53E-07	9.97E-10	-3.31E-13;
+% 	-110.7347984	-0.086473798	-9.63E-06	8.56E-09	-2.11E-12;
+% 	-68.77179183	0.038329957	9.22E-05	-5.46E-08	1.24E-11;
+% 	-240.6171143	0.035116356	2.02E-05	-9.33E-09	1.78E-12];
 	
-	Gf = zeros(1,4);
-	for i = 1:4
-        Gf(1,i) = G_const(i,1) + G_const(i,2)*T + G_const(i,3)*T^2 + G_const(i,4)*T^3 + G_const(i,5)*T^4;
-	end
-	Keq = exp(-(Gf(1,1) - Gf(1,2) - Gf(1,4))*1000/R/T);
+% 	Gf = zeros(1,4);
+% 	for i = 1:4
+%         Gf(1,i) = G_const(i,1) + G_const(i,2)*T + G_const(i,3)*T^2 + G_const(i,4)*T^3 + G_const(i,5)*T^4;
+% 	end
+% 	Keq = exp(-(Gf(1,1) - Gf(1,2) - Gf(1,4))*1000/R/T);
 	
-end
+% end
