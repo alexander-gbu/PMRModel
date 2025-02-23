@@ -93,7 +93,7 @@ function R = rxneq(y, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 
 	%ch4; h20; co; co2; h2; ar
 	R(1,1) = Ku/L*Asmr*exp(-Easmr*1000/gasconstant/T)*(y(1)*y(2)-P^2*y(3)*y(5)^3/Keqsmr);
-	R(2,1) = Ku/L*Awgs*exp(-Eawgs*1000/gasconstant/T)*(y(3)*y(2)-y(4)*y(5)/Keqwgs)
+	R(2,1) = Ku/L*Awgs*exp(-Eawgs*1000/gasconstant/T)*(y(3)*y(2)-y(4)*y(5)/Keqwgs);
 	R(3,1) = I/(2*F*L); 
 end
 
