@@ -3,7 +3,7 @@ clear;
 
 % 48 sccm of steam, 10 sccm h2 and then the steady state is without seperation
 
-L = 0.07;
+L = 0.07; %m
 
 T = 721.4064371;  %C
 T = T + 273.15; %K
@@ -86,7 +86,7 @@ function R = rxneq(y, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 	Mc = 13; %13 mg
 	PR = 0.9; %90%
 	Psc = pi() * 2 * (2.5/1000); %perimeter in m
-	Ku = (Am * Mc * PR) / (Psc * L); %current value with area calculation: Ku = 98.2213
+	Ku = (Am * Mc * PR) / (Psc * L); %current value with area calculation: Ku = 0.1228
 
 	I = 9; %curent in Amps
 	F = 96485; %faradays constant
