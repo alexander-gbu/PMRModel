@@ -20,7 +20,7 @@ C0 = y0*Ctot;
 
 u0 = sum(sccm0) * 273 / T * P / 1 / 60; %cm^3/sec
 A = pi() * (3.5/10)^2; %cm^2. I assumed a 7 mm diameter
-v0 = u0 / A / 2 / 100 %m/sec v0 = 0.0047
+v0 = u0 / A / 100 %m/sec v0 = 0.0047
 
 Nx = 50;
 Nt = 100;
