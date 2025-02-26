@@ -43,7 +43,7 @@ title('Concentrations at t = 10s');
 
 T
  
-function [c,f,s] = pdefun(x,t,y,dCdx) %#ok<*INUSD> %might have to change the C back to u if this thing starts freaking out
+function [c,f,s] = pdefun(x,t,y,dCdx) %might have to change the C back to u if this thing starts freaking out
 	T = 622 + 273.15;
 	P = 1; %bar
     L = 0.07;
@@ -57,7 +57,7 @@ function [c,f,s] = pdefun(x,t,y,dCdx) %#ok<*INUSD> %might have to change the C b
 	
 	c = zeros(length(y),1) + 1;
 	f = zeros(length(y),1);
-	s = -v*dCdx + nu*R*8.3144598*10^-5*T/P;
+	s = -v*dCdx + nu*R;
 end
 
 %initial conditions
