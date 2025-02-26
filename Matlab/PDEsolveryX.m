@@ -1,7 +1,11 @@
 clc;
 clear;
 
-% 48 sccm of steam, 10 sccm h2 and then the steady state is without seperation
+% With Ku = 1 the model matches pretty closely at 600C and 700C once we go down to 500 it fails
+% 
+% I think moving to a mol balance might be best because then when we are removing the hydrogen the fractions will be messed up
+% the velocity will also change when were taking out the hydrogen
+% Paper timeline?
 
 L = 0.07; %m
 
