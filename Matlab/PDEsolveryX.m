@@ -9,7 +9,7 @@ clear;
 
 L = 0.07; %m
 
-T = 721.4064371;  %C
+T = 622;  %C
 T = T + 273.15; %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
@@ -17,7 +17,7 @@ nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignore
 % ch4; h20; co; co2; h2; ar
 sccm0 = [16.16; 48.48; 0; 0; 10; 5];
 mols0 = sccm0/22400 * 60;
-y0 = mols0/sum(mols0);
+y0 = mols0/sum(mols0)
 sumy0 = sum(y0);
 Ctot = P/(8.3144598 * 10^-5 * T); %mol/m3
 C0 = y0*Ctot;
@@ -44,11 +44,11 @@ title('Concentrations at t = 10s');
 T
  
 function [c,f,s] = pdefun(x,t,y,dCdx) %#ok<*INUSD> %might have to change the C back to u if this thing starts freaking out
-	T = 900;
+	T = 622 + 273.15;
 	P = 1; %bar
     L = 0.07;
 	ych40 = 0.2029;
-	v0 = 0.0047;
+	v0 = 0.0105;
 	
     v = v0*(3*ych40 - 2*y(1,1))/ych40;
 	
@@ -91,6 +91,8 @@ function R = rxneq(y, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 	PR = 0.9; %90%
 	Psc = pi() * 2 * (2.5/1000); %perimeter in m
 	Ku = (Am * Mc * PR) / (Psc * L); %current value with area calculation: Ku = 0.1228
+
+	Ku = 1;
 
 	I = 9; %curent in Amps
 	F = 96485; %faradays constant
