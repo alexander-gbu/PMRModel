@@ -1,7 +1,8 @@
 clc;
 clear;
 
-% With Ku = 1 the model matches pretty closely at 600C and 700C once we go down to 500 it fails
+% This model is very good try with multiplying by the ya0 term see how that works
+% convert the model to molar flowrate
 % 
 % I think moving to a mol balance might be best because then when we are removing the hydrogen the fractions will be messed up
 % the velocity will also change when were taking out the hydrogen
