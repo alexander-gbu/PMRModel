@@ -37,7 +37,7 @@ C = pdepe(m,@pdefun,@icfun,@bcfun,x,t);
 figure(1);
 plot(x, C(end,:,1), x, C(end,:,2), x, C(end,:,3), x, C(end,:,4), x, C(end,:,5), x, C(end,:,6), 'LineWidth',1);
 ylim([0 1]);
-legend('Cch4','Ch2o','Cco', 'Cco2','Ch2','Car');
+legend('ych4','yh2o','yco', 'yco2','yh2','yar');
 ylabel('y_i');
 xlabel('Length of reactor z');
 title('Concentrations at t = 10s');

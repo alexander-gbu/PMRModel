@@ -1,11 +1,11 @@
 clc;
 clear;
 
-% Need to multiply v0 only by conversion. Maybe Ku is still off a bit
+% Model is somewhat accurate! Need to multiply v0 only by conversion. Maybe Ku is still off a bit
 
 L = 0.07; %m
 
-T = 721+273; %K
+T = 622+273; %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
@@ -25,16 +25,20 @@ zSpan = linspace(0,L);
 [z,y] = ode45(@(x,y) odefun(x, y, T, P, v0, y0, nu, L), zSpan, y0);
 figure(1);
 plot(z, y, 'Linewidth', 1);
-legend('Pch4','Ph2o','Pco','Pco2','Ph2','Par');
+legend('ych4','yh2o','yco','yco2','yh2','yar');
 ylim([0 1]);
-ylabel('P_i');
+ylabel('y_i');
 xlabel('z');
-title('Partial Pressures at SS');
+title('SS molar composition at ' + string(T) + 'K');
 
 y(end, :)
-%[0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628] %622
-[0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807] %721
-'Comparison with Ku = 1 shows that model is somwehat accurate'
+if T == 622 +273
+	[0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628] %622
+elseif T == 721+273
+	[0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807] %721
+else
+	[0]
+end
 
 function dydz = odefun(x, y, T, P, v0, y0, nu, L) %#ok<*INUSD>
 

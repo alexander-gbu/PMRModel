@@ -1,11 +1,11 @@
 clc;
 clear;
 
-% Need to multiply v0 only by conversion. Maybe Ku is still off a bit
+%
 
 L = 0.07; %m
 
-T = 622+273; %K
+T = 721+273; %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
@@ -19,39 +19,41 @@ C0 = y0*Ctot;
 
 u0 = sum(sccm0) * 273 / T * P / 1 / 60; %cm^3/sec
 A = pi() * (3.5/10)^2; %cm^2. I assumed a 7 mm diameter
-v0 = u0 / A / 100 %m/sec v0 = 0.0047
+v0 = u0 / A / 100 %m/sec
 
 zSpan = linspace(0,L);
-[z,y] = ode45(@(x,y) odefun(x, y, T, P, v0, y0, nu, L), zSpan, y0);
+[z,F] = ode45(@(z,F) odefun(z, F, T, P, v0, nu, L, A), zSpan, mols0);
 figure(1);
-plot(z, y, 'Linewidth', 1);
-legend('Pch4','Ph2o','Pco','Pco2','Ph2','Par');
-ylim([0 1]);
-ylabel('P_i');
-xlabel('z');
-title('Partial Pressures at SS');
+plot(z, F, 'Linewidth', 1);
+legend('Fch4','Fh2o','Fco', 'Fco2','Fh2','Far');
+ylabel('F_i');
+xlabel('Length of reactor z');
+title('SS molar flowrates at ' + string(T) + 'K');
 
-y(end, :)
-[0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628] %622
-% [0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807] %721
-'Comparison with Ku = 1 shows that model is somwehat accurate'
+F(end, :)
+if T == 622 +273
+	[0.020121116 0.138771297 0.012236972 0.012236972 0.083527947 0.013392857] %622
+elseif T == 721+273
+	[0.005498858 0.177367063 0.025930969 0.009834753 0.054283431 0.013392857] %721
+else
+	[0]
+end
 
-function dydz = odefun(x, y, T, P, v0, y0, nu, L) %#ok<*INUSD>
-
-	v = v0*(3*y0(1,1) - 2*y(1,1))/y0(1,1);
+function dFdz = odefun(x, F, T, P, v0, nu, L, A) %#ok<*INUSD>
 	
 	Keqsmr = (101325/100000)^2 * exp(-26830/T + 30.114);
 	Keqwgs = exp(4400/T - 4.036);
 
-
-	Rmatrix = rxneq(y, Keqsmr, Keqwgs, T, L); 
+	Rmatrix = rxneq(F, Keqsmr, Keqwgs, T, L); 
 	
-	dydz = (nu*Rmatrix)/v;
+	dFdz = (nu*Rmatrix)*(8.3144598 * 10^-2 * (T))/P;
 end
 
-function R = rxneq(y, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
+function R = rxneq(F, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 
 	R = zeros(3,1);
+
+	y = F/sum(F);
 
 	%initialize constants for the reaction here
 	P = 1;
@@ -68,13 +70,13 @@ function R = rxneq(y, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
 	Psc = pi() * 2 * (2.5/1000); %perimeter in m
 	Ku = (Am * Mc * PR) / (Psc * L); %current value with area calculation: Ku = 0.1228
 
+	Ku = 1;
+
 	I = 9; %curent in Amps
 	F = 96485; %faradays constant
 
-	Ku = 1;
-
 	%ch4; h20; co; co2; h2; ar
-	R(1,1) = Ku/L*Asmr*exp(-Easmr*1000/gasconstant/T)*(y(1)*y(2)-P^2*y(3)*y(5)^3/Keqsmr);
-	R(2,1) = Ku/L*Awgs*exp(-Eawgs*1000/gasconstant/T)*(y(3)*y(2)-y(4)*y(5)/Keqwgs);
+	R(1,1) = Ku*Asmr*exp(-Easmr*1000/gasconstant/T)*(y(1)*y(2)-P^2*y(3)*y(5)^3/Keqsmr);
+	R(2,1) = Ku*Awgs*exp(-Eawgs*1000/gasconstant/T)*(y(3)*y(2)-y(4)*y(5)/Keqwgs);
 	R(3,1) = I/(2*F*L); 
 end
