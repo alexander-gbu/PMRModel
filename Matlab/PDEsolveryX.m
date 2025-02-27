@@ -1,7 +1,7 @@
 clc;
 clear;
 
-% This model is very good try with multiplying by the ya0 term see how that works
+% This model is very good try with multiplying by the ya0 term does not work
 % convert the model to molar flowrate
 % 
 % I think moving to a mol balance might be best because then when we are removing the hydrogen the fractions will be messed up
@@ -44,7 +44,7 @@ title('Concentrations at t = 10s');
 
 T
  
-function [c,f,s] = pdefun(x,t,y,dCdx) %might have to change the C back to u if this thing starts freaking out
+function [c,f,s] = pdefun(x,t,y,dydx) %might have to change the C back to u if this thing starts freaking out
 	T = 622 + 273.15;
 	P = 1; %bar
     L = 0.07;
@@ -58,7 +58,7 @@ function [c,f,s] = pdefun(x,t,y,dCdx) %might have to change the C back to u if t
 	
 	c = zeros(length(y),1) + 1;
 	f = zeros(length(y),1);
-	s = -v*dCdx + nu*R;
+	s = -v*dydx + nu*R;
 end
 
 %initial conditions

@@ -1,11 +1,11 @@
 clc;
 clear;
 
-% This model is so much better than the other way. Maybe if we play around with Ku it fixes itself but i think this is correct
+% Need to multiply v0 only by conversion. Maybe Ku is still off a bit
 
 L = 0.07; %m
 
-T = 621+273; %K
+T = 622+273; %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
@@ -32,13 +32,13 @@ xlabel('z');
 title('Partial Pressures at SS');
 
 y(end, :)
-[0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628] %621
-%[0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807] %721
+[0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628] %622
+% [0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807] %721
 'Comparison with Ku = 1 shows that model is somwehat accurate'
 
-function dydt = odefun(x, y, T, P, v0, y0, nu, L) %#ok<*INUSD>
+function dydz = odefun(x, y, T, P, v0, y0, nu, L) %#ok<*INUSD>
 
-	v = v0*(3*y0(1,1) - 2*y(1,1))/y0(1,1)
+	v = v0*(3*y0(1,1) - 2*y(1,1))/y0(1,1);
 	
 	Keqsmr = (101325/100000)^2 * exp(-26830/T + 30.114);
 	Keqwgs = exp(4400/T - 4.036);
@@ -46,7 +46,7 @@ function dydt = odefun(x, y, T, P, v0, y0, nu, L) %#ok<*INUSD>
 
 	Rmatrix = rxneq(y, Keqsmr, Keqwgs, T, L); 
 	
-	dydt = (nu*Rmatrix)/v;
+	dydz = (nu*Rmatrix)/v;
 end
 
 function R = rxneq(y, Keqsmr, Keqwgs, T, L) % units of mol/m3/s
