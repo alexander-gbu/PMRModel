@@ -1,11 +1,11 @@
 clc;
 clear;
 
-%
+% We cant do this because as our overall moles as our moles increase the linear velocity must also increase.
 
 L = 0.07; %m
 
-T = 721+273; %K
+T = 622+273; %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
@@ -21,6 +21,8 @@ u0 = sum(sccm0) * 273 / T * P / 1 / 60; %cm^3/sec
 A = pi() * (3.5/10)^2; %cm^2. I assumed a 7 mm diameter
 v0 = u0 / A / 100 %m/sec
 
+A = A/(100^2);
+
 zSpan = linspace(0,L);
 [z,F] = ode45(@(z,F) odefun(z, F, T, P, v0, nu, L, A), zSpan, mols0);
 figure(1);
@@ -30,14 +32,22 @@ ylabel('F_i');
 xlabel('Length of reactor z');
 title('SS molar flowrates at ' + string(T) + 'K');
 
-F(end, :)
 if T == 622 +273
-	[0.020121116 0.138771297 0.012236972 0.012236972 0.083527947 0.013392857] %622
+	Fexp = [0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628]; %622
 elseif T == 721+273
-	[0.005498858 0.177367063 0.025930969 0.009834753 0.054283431 0.013392857] %721
+	Fexp = [0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807]; %721
 else
-	[0]
+	[0 0 0 0 0 0]
 end
+
+Fbar = [4*F(end, :); Fexp];
+figure(2);
+cats = categorical({'Fch4','Fh2o','Fco','Fco2','Fh2','Far'});
+cats = reordercats(cats,{'Fch4','Fh2o','Fco','Fco2','Fh2','Far'});
+bar(cats,Fbar)
+ylabel('F_i');
+title('Accuracy of model at ' + string(T) + 'K');
+legend('Model','Experimental');
 
 function dFdz = odefun(x, F, T, P, v0, nu, L, A) %#ok<*INUSD>
 	

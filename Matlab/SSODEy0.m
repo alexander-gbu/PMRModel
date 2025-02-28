@@ -5,12 +5,12 @@ clear;
 
 L = 0.07; %m
 
-T = 622+273; %K
+T = 622+273 %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
 % ch4; h20; co; co2; h2; ar
-sccm0 = [16.16; 48.48; 0; 0; 10; 5];
+sccm0 = [16.16, 48.48, 0, 0, 10, 5];
 mols0 = sccm0/22400 * 60;
 y0 = mols0/sum(mols0);
 sumy0 = sum(y0);
@@ -29,16 +29,24 @@ legend('ych4','yh2o','yco','yco2','yh2','yar');
 ylim([0 1]);
 ylabel('y_i');
 xlabel('z');
-title('SS molar composition at ' + string(T) + 'K');
+title('SS molar composition at ' + string(T) + 'K or ' + string(T-273) + 'C');
 
-y(end, :)
-if T == 622 +273
-	[0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628] %622
+if T == 622+273
+	yexp = [0.071787506 0.298008466 0.043658696 0.043658696 0.495104008 0.047782628]; %622
 elseif T == 721+273
-	[0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807] %721
+	yexp = [0.019206098 0.189598069 0.090570208 0.034350264 0.619497555 0.046777807]; %721
 else
-	[0]
+	[0 0 0 0 0 0]
 end
+
+ybar = [y(end, :); yexp];
+figure(2);
+cats = categorical({'ych4','yh2o','yco','yco2','yh2','yar'});
+cats = reordercats(cats,{'ych4','yh2o','yco','yco2','yh2','yar'});
+bar(cats,ybar)
+ylabel('y_i');
+title('Accuracy of model at ' + string(T) + 'K or ' + string(T-273) + 'C');
+legend('Model','Experimental');
 
 function dydz = odefun(x, y, T, P, v0, y0, nu, L) %#ok<*INUSD>
 
