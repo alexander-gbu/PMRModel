@@ -5,7 +5,7 @@ clear;
 
 L = 0.07; %m
 
-T = 622+273 %K
+T = 573+273 %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 

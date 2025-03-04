@@ -1,12 +1,12 @@
 clc;
 clear;
 
-%my area calculation is off because its 7mm for both tubes
+%REDO AREA CALC!!! my area calculation is off because its 7mm for both tubes
 
 L = 0.0609; %m
 r = 3.5/1000; %m
 
-T = 622+273 %K
+T = 573+273 %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
@@ -20,7 +20,7 @@ C0 = y0*Ctot;
 
 %this is a jumble right now
 u0 = sum(sccm0) * 273 / T * P / 1 / 60; %cm^3/sec
-A = pi() * (r*100)^2; %cm^2. I assumed a 7 mm diameter
+A = pi() * ((r*100)^2-(0.2)^2); %cm^2. I assumed a 7 mm diameter with 3.5 mm being r_outer and 2 mm being r_inner
 v0 = u0 / A / 100 %m/sec
 
 zSpan = linspace(0,L);
@@ -63,17 +63,16 @@ function dydz = odefun(x, y, T, P, v0, y0, nu, L, r) %#ok<*INUSD>
 	Keqwgs = exp(4400/T - 4.036);
 
 
-	Rmatrix = rxneq(y, Keqsmr, Keqwgs, T, L, r); 
+	Rmatrix = rxneq(y, Keqsmr, Keqwgs, T, P, L, r); 
 	
-	dydz = (nu*Rmatrix *(8.3144598 * 10^-5 * T)/P)/v;
+	dydz = (nu*Rmatrix)/v;
 end
 
-function R = rxneq(y, Keqsmr, Keqwgs, T, L, r) % units of mol/m3/s
+function R = rxneq(y, Keqsmr, Keqwgs, T, P, L, r) % units of mol/m3/s
 
 	R = zeros(3,1);
 
 	%initialize constants for the reaction here
-	P = 1;
 	gasconstant = 8.314; %J / mol·K
 	Easmr = 165.740; %kJ/mol
 	Asmr = 1.68*10^8;
@@ -85,15 +84,17 @@ function R = rxneq(y, Keqsmr, Keqwgs, T, L, r) % units of mol/m3/s
 	Mc = 13; %13 mg
 	PR = 0.9; %90%
 	Psc = pi() * 2 * (2.5/1000); %perimeter in m
-	Ku = (Am * Mc * PR) / (Psc * L); %current value with area calculation: Ku = 0.1228
+	Ku = (Am * Mc * PR) / (Psc * L); %current value with area calculation: Ku = 0.1411
 
 	I = 9; %curent in Amps
 	F = 96485; %faradays constant
 
 	Ku = 1;
 
+	r = 3.5/1000;
+
 	%ch4; h20; co; co2; h2; ar
-	R(1,1) = 2/r*Ku*Asmr*exp(-Easmr*1000/gasconstant/T)*(y(1)*y(2)-P^2*y(3)*y(5)^3/Keqsmr);
-	R(2,1) = 2/r*Ku*Awgs*exp(-Eawgs*1000/gasconstant/T)*(y(3)*y(2)-y(4)*y(5)/Keqwgs);
+	R(1,1) = 2/r*Ku*Asmr*exp(-Easmr*1000/gasconstant/T)*(y(1)*y(2)-P^2*y(3)*y(5)^3/Keqsmr)*(8.3144598 * 10^-5 * T)/P;
+	R(2,1) = 2/r*Ku*Awgs*exp(-Eawgs*1000/gasconstant/T)*(y(3)*y(2)-y(4)*y(5)/Keqwgs)*(8.3144598 * 10^-5 * T)/P;
 	R(3,1) = I/(2*F*L); 
 end
