@@ -1,0 +1,5 @@
+Hi! I just wanted to give you some insight into the naming of the files and what each file does
+The current model that i am using to compare to the experimental data is the ShellBalSSODE. That is where I use the adjusted equations. 
+I am currently working on automating the PDE solver(PDEsolveryX) but at long times it does give the same result as the SS.
+The FPDEsolver and FSSODE files were me trying to get the model in terms of flowrates but that failed because we needed the instantaneous volume.
+CompKeqCalc compares the papers equilibrium constants to equilibrium constants based on gibbs free energy 

@@ -2,10 +2,6 @@ clc;
 clear;
 
 % convert the model to molar flowrate
-% 
-% I think moving to a mol balance might be best because then when we are removing the hydrogen the fractions will be messed up
-% the velocity will also change when were taking out the hydrogen
-% Paper timeline?
 
 L = 0.07; %m
 
