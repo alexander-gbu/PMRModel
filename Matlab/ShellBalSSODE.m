@@ -4,7 +4,8 @@ clear;
 %REDO AREA CALC!!! my area calculation is off because its 7mm for both tubes
 
 L = 0.0609; %m
-r = 3.5/1000; %m
+R_inner = 2.39/1000; %m
+R_outer = 3.5/1000; %m
 
 T = 573+273 %K
 P = 1; %bar or atm
@@ -20,11 +21,11 @@ C0 = y0*Ctot;
 
 %this is a jumble right now
 u0 = sum(sccm0) * 273 / T * P / 1 / 60; %cm^3/sec
-A = pi() * ((r*100)^2-(0.2)^2); %cm^2. I assumed a 7 mm diameter with 3.5 mm being r_outer and 2 mm being r_inner
+A = pi() * ((R_outer*100)^2-(R_inner*100)^2); %cm^2. I assumed a 7 mm diameter with 3.5 mm being r_outer and 2 mm being r_inner
 v0 = u0 / A / 100 %m/sec
 
 zSpan = linspace(0,L);
-[z,y] = ode45(@(x,y) odefun(x, y, T, P, v0, y0, nu, L, r), zSpan, y0);
+[z,y] = ode45(@(x,y) odefun(x, y, T, P, v0, y0, nu, L, R_outer), zSpan, y0);
 figure(1);
 plot(z, y, 'Linewidth', 1);
 legend('ych4','yh2o','yco','yco2','yh2','yar');
