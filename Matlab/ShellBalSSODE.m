@@ -7,7 +7,7 @@ L = 0.0609; %m
 R_inner = 2.39/1000; %m
 R_outer = 3.5/1000; %m
 
-T = 573+273 %K
+T = 622+273 %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
@@ -30,8 +30,9 @@ figure(1);
 plot(z, y, 'Linewidth', 1);
 legend('ych4','yh2o','yco','yco2','yh2','yar');
 ylim([0 1]);
+xlim([0 0.0609])
 ylabel('y_i');
-xlabel('z');
+xlabel('z (m)');
 title('SS molar composition at ' + string(T) + 'K or ' + string(T-273) + 'C');
 
 if T == 622+273
