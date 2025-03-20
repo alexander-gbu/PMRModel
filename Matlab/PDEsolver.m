@@ -1,18 +1,13 @@
 clc;
 clear;
 
-% This model is very good try with multiplying by the ya0 term does not work
-% convert the model to molar flowrate
-% 
-% I think moving to a mol balance might be best because then when we are removing the hydrogen the fractions will be messed up
-% the velocity will also change when were taking out the hydrogen
-% Paper timeline?
+% This model is the current one that I am working on (solverX is outdated)
 
 L = 0.0609; %m
 R_inner = 2.39/1000; %m
 R_outer = 3.5/1000; %m
 
-T = 622+273 %K
+T = 721+273 %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
 
@@ -27,24 +22,25 @@ C0 = y0*Ctot;
 
 %this is a jumble right now
 u0 = sum(sccm0) * 273 / T * P / 1 / 60; %cm^3/sec
-A = pi() * ((R_outer*100)^2-(R_inner*100)^2); %cm^2. I assumed a 7 mm diameter with 3.5 mm being r_outer and 2 mm being r_inner
+A = pi() * ((R_outer*100)^2-(R_inner*100)^2); %cm^2. 
 v0 = u0 / A / 100 %m/sec
 
-Nx = 50;
-Nt = 100;
+Nx = 200;
+Nt = 50;
+tfinal = 15;
 x = linspace(0,L,Nx); %length of reactor
-t = linspace(0,15,Nt); %time steps
+t = linspace(0,tfinal,Nt); %time steps
 m = 0;
 C = pdepe(m,@(x,t,y,dydx) pdefun(x,t,y,dydx,T,P,L,ych40,v0,R_outer),@icfun,@bcfun,x,t);
 
 figure(1);
 plot(x, C(end,:,1), x, C(end,:,2), x, C(end,:,3), x, C(end,:,4), x, C(end,:,5), x, C(end,:,6), 'LineWidth',1);
 ylim([0 1]);
-xlim([0 0.0609])
+xlim([0 L])
 legend('ych4','yh2o','yco', 'yco2','yh2','yar');
 ylabel('y_i');
 xlabel('z (m)');
-title('Composition at t = 15s at ' + string(T) + 'K or ' + string(T-273) + 'C');
+title('Composition at t = ' + string(tfinal) + 's at ' + string(T) + 'K or ' + string(T-273) + 'C');
  
 function [c,f,s] = pdefun(x,t,y,dydx,T,P,L,ych40,v0,R_outer) %might have to change the C back to u if this thing starts freaking out
 

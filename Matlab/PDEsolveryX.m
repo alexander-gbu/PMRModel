@@ -1,16 +1,11 @@
 clc;
 clear;
 
-% This model is very good try with multiplying by the ya0 term does not work
-% convert the model to molar flowrate
-% 
-% I think moving to a mol balance might be best because then when we are removing the hydrogen the fractions will be messed up
-% the velocity will also change when were taking out the hydrogen
-% Paper timeline?
+% OUTDATED ONE
 
 L = 0.07; %m
 
-T = 622;  %C
+T = 721;  %C
 T = T + 273.15; %K
 P = 1; %bar or atm
 nu = [-1 0 0; -1 -1 0; 1 -1 0; 0 1 0; 3 1 0; 0 0 0]; %removal of hydrogen ignored for now
