@@ -1,0 +1,9 @@
+So FiPy is now working with varying the velocity but it is struggling with small values. There are big instabilities
+
+The scipy is just a regular initial value problem solver so it could take again longer times to solve. This is not much different from the matlab code. It will probalby be more stable and faster than the matlab code but it does not solve the ODE directly. Still discritization
+
+Then Fenics project and dolfin is also a more complicated initial value problem solver.
+
+Then PiClaw is complicated and you have to use pre-built conventions to name what you are doing. Kinda confusing
+
+I think that scipy is our best option
