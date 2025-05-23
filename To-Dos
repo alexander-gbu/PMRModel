@@ -1,5 +1,4 @@
-Make sure that molar flowrate is calculated correctly
-double check the math for the pipe. Right now I think the system might just be a large pipe but it doesnt have an inside. IDKKKK
+make sure that reaction rate is calculated correctly
 
 
 rxn rates is calculated twice
