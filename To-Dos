@@ -2,4 +2,4 @@ see if Cvh is more accurate (i think it might)
 make sure that reaction rate is calculated correctly
 
 
-rxn rates is calculated twice
+rxn rates is calculated twice, can just calculate them for the top row and not for the entire reactor
