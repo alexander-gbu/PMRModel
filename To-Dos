@@ -1,5 +1,5 @@
-see if Cvh is more accurate (i think it might)
-make sure that reaction rate is calculated correctly
 
+make sure that reaction rate is calculated correctly. Adjust the flux area calculation
+see if Cvh is more accurate (i think it might be with less points)
 
 rxn rates is calculated twice, can just calculate them for the top row and not for the entire reactor
