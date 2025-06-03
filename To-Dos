@@ -1,3 +1,5 @@
+Redo Yifeis calculation of inside heat flux/UA and concentration!
+Combine the two files and make itterative
 
 make sure that reaction rate is calculated correctly. Adjust the flux area calculation
 see if Cvh is more accurate (i think it might be with less points)
