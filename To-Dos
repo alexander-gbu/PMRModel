@@ -1,5 +1,14 @@
-Redo Yifeis calculation of inside heat flux/UA and concentration!
-Combine the two files and make itterative
+Meeting w Dominic
+- Calculation of enthalpy with enthalpy of formation fine
+- Calculation of Yifei's numbers (U and Concentration) mine seem good
+- How to line up the kinetics? that is fine
+
+Print the reaction rates (can do this after the code is ran)
+
+Compare to experiments to see if the code is actually accurate
+
+Combine the two files and make itterative and then also combine all of the graphs too
+
 
 make sure that reaction rate is calculated correctly. Adjust the flux area calculation
 see if Cvh is more accurate (i think it might be with less points)
