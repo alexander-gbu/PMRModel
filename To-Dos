@@ -1,4 +1,5 @@
 Recalculate enthalpy in vs out and see if then the heat that needs to be supplied is actually 3400 W/m2
+- can use heat capacity to calculate the change
 check for other overall heat transfer coefficient calculations
 Compare to experiments to see if the code is actually accurate
 
