@@ -1,22 +1,7 @@
-Just do ur own thing bro
-- calculate the overall heat transfer coefficient and see how different it is across the thingy 
-
-Check if the loss of energy balance is around the switch point (do overall both sides work out?)
-
-
-Meeting w Dominic
-- Calculation of enthalpy with enthalpy of formation fine
-- Calculation of Yifei's numbers (U and Concentration) mine seem good
-- How to line up the kinetics? that is fine
-
-Print the reaction rates (can do this after the code is ran)
-
+Recalculate enthalpy in vs out and see if then the heat that needs to be supplied is actually 3400 W/m2
+check for other overall heat transfer coefficient calculations
 Compare to experiments to see if the code is actually accurate
 
-Combine the two files and make itterative and then also combine all of the graphs too
-
+Can comapre the reaction rates (can do this after the code is ran)
 
 make sure that reaction rate is calculated correctly. Adjust the flux area calculation
-see if Cvh is more accurate (i think it might be with less points)
-
-rxn rates is calculated twice, can just calculate them for the top row and not for the entire reactor
