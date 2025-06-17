@@ -1,6 +1,6 @@
-Recalculate enthalpy in vs out and see if then the heat that needs to be supplied is actually 3400 W/m2
-- can use heat capacity to calculate the change
-check for other overall heat transfer coefficient calculations
+Run at different temps and then compare to experiments. See the code colab
+Fix the temperature in comparison for ease of access
+ - can also include the model temp in the label
 Compare to experiments to see if the code is actually accurate
 
 Can comapre the reaction rates (can do this after the code is ran)
