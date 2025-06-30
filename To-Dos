@@ -1,7 +1,3 @@
-There is something wrong with the equilibrium at the lower temperatures, I think it has to do with the temperature profile but I dont know
+get the reaction rates
 
-Adjust the model to fit better at lower temperatures
-
-Can comapre the reaction rates (can do this after the code is ran)
-
-make sure that reaction rate is calculated correctly. Adjust the flux area calculation
+changing activation and pre exponential to match experiments
