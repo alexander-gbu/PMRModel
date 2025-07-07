@@ -10,7 +10,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+%#ok<*NUSED>
+%#ok<*GVMIS>
+%#ok<*INUSD>
 
 global delta nmesh 
 global scan_rate E_start E_end potential_range half_cycle_time
@@ -280,7 +282,7 @@ end
 %u(16)-u(2)-2.0*u(3)-u(4)-u(9)-u(14)
 % --------------------------------------------------------------------------
 
-function u0 = pdex5ic(x)
+function u0 = pdex5ic(x) 
 % Initial composition of the bulk electrolyte at t=0
 global C_Fe3_i C_Fe2_i C_Fe1_i C_Fe0_i 
 
@@ -293,7 +295,7 @@ end
 function [pl,ql,pr,qr] = pdex5bc(xl,ul,xr,ur,t)
 % Initial composition of the bulk electrolyte at t=0
 global C_Fe3_i C_Fe2_i C_Fe1_i C_Fe0_i R T F
-global k0_3_2 k0_2_1 Fe1formation Fe0formation
+global k0_3_2 k0_2_1 Fe1formation Fe0formation 
 global scan_rate E_start E_end half_cycle_time
 
 
@@ -314,18 +316,16 @@ E0_1_0=-2.0;
 
 if t <= half_cycle_time
      E = E_start - scan_rate*t;
-else if (t > half_cycle_time) && (t <= 2*half_cycle_time)
+elseif (t > half_cycle_time) && (t <= 2*half_cycle_time)
       E = E_end + scan_rate*(t-half_cycle_time);
-else if (t > 2*half_cycle_time) && (t <= 3*half_cycle_time)
+elseif (t > 2*half_cycle_time) && (t <= 3*half_cycle_time)
       E = E_start - scan_rate*(t-2*half_cycle_time);
-else if (t > 3*half_cycle_time) && (t <= 4*half_cycle_time)
+elseif (t > 3*half_cycle_time) && (t <= 4*half_cycle_time)
       E = E_end + scan_rate*(t-3*half_cycle_time);
 end
-end
-end
-end
-t;
-E;
+
+% t
+% E
 pr = [k0_3_2*(ur(1)*exp(-0.5*(E-E0_3_2)*F/R/T)-ur(2)*exp(0.5*(E-E0_3_2)*F/R/T));...
     -k0_3_2*(ur(1)*exp(-0.5*(E-E0_3_2)*F/R/T)-ur(2)*exp(0.5*(E-E0_3_2)*F/R/T))+k0_3_2*(ur(2)*exp(-0.5*(E-E0_2_1)*F/R/T)-ur(3)*exp(0.5*(E-E0_2_1)*F/R/T));...
     -k0_3_2*(ur(2)*exp(-0.5*(E-E0_2_1)*F/R/T)-ur(3)*exp(0.5*(E-E0_2_1)*F/R/T))+k0_3_2*(ur(3)*exp(-0.5*(E-E0_1_0)*F/R/T)-ur(4)*exp(0.5*(E-E0_1_0)*F/R/T));...

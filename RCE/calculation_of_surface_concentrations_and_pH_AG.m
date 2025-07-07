@@ -10,6 +10,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%#ok<*NUSED>
+%#ok<*GVMIS>
+%#ok<*INUSD>
+%#ok<*TLEV>
+
 % This code is designed to predict the chemical conditions near the surface of a metal cathode under CO2R.
 % The input data is introduced in a txt file. The structure or the txt file is described in the file "Input_data_example.txt"  
 
@@ -33,7 +38,7 @@ HCO3m_nominal(1,1) = dlmread(filename,'', [4 0 4 0]);
 bic = HCO3m_nominal(1,1);
 thickness = dlmread(filename,'', [5 0 5 0]);
 Data = dlmread(filename,'', [6 0 row col]);
-Data
+
 %Data(1:end,1)
 
 fclose(fileID1);
@@ -124,7 +129,7 @@ for m = 1:nprod+2
         end
     end
 end
-vpot
+% vpot
 
 %------------------------------
 %Calculation of total faradaic yield
@@ -252,7 +257,7 @@ pH_i = 14+log10(C_OHm_i/1000.0); %initial pH
 
 %-----------------------------
 %Diffusion coefficients (ref: Cussler, E. L. (1997). Diffusion: Mass Transfer in Fluid Systems (2nd ed.) )
-%Diffusion coefficient for HCOO- from Petr Vanýsek: Ionic conductivity and diffusion at infinite dilution, Handbook of Chemistry and Physics
+%Diffusion coefficient for HCOO- from Petr Vanï¿½sek: Ionic conductivity and diffusion at infinite dilution, Handbook of Chemistry and Physics
 D0_CO2 = 1.91e-009; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]
 D0_CO32m = 9.23e-010; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
 D0_HCO3m = 1.185e-009; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
@@ -299,7 +304,7 @@ D_K = D0_K*mu0/mu; %Diffusion coefficient of ethyleneglycol in HCO3- solution at
 % u_acetate = D_acetate; %mobility of acetate in HCO3- solution at 25C [m/s]
 % u_K = D_K %mobility of potassium ion in HCO3- solution at 25C [m/s]
 %-----------------------------
-global CO2consumption OHmformation H2formation COformation CH4formation vpot_i
+global CO2consumption OHmformation H2formation COformation CH4formation vpot_i 
 global C2H4formation HCOOmformation etolformation propolformation 
 global allylformation metolformation acetateformation ethylglyformation unknownformation
 % Calculation of CO2 consumption rate at cathode surface (mol/m2/s)
