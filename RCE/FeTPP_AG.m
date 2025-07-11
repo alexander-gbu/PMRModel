@@ -14,6 +14,9 @@
 %#ok<*GVMIS>
 %#ok<*INUSD>
 
+clc;
+clear;
+
 global delta nmesh 
 global scan_rate E_start E_end potential_range half_cycle_time
 
@@ -179,7 +182,7 @@ Fe1conc = sol(nmesh,:,3)/1000.0;
 Fe0conc = sol(nmesh,:,4)/1000.0;
 
 
-figure;
+figure(1);
  surf(x,t,u1/1000.0,'edgecolor','none');
  set(gca,'xlim',[0.0 delta]);
  set(gca,'fontsize',11.5);
@@ -191,7 +194,7 @@ figure;
 
 
 
-figure;
+figure(2);
 surf(x,t,u2/1000.0,'edgecolor','none');
 set(gca,'xlim',[0.0 delta]);
 set(gca,'fontsize',11.5);
@@ -201,7 +204,7 @@ ylabel('Time t [s]');
 zlabel('Fe(II)[mol/L]');
 view(30,20);
 
-figure;
+figure(3);
 surf(x,t,u3/1000.0,'edgecolor','none');
 set(gca,'xlim',[0.0 delta]);
 set(gca,'fontsize',11.5);
@@ -211,7 +214,7 @@ ylabel('Time t [s]');
 zlabel('Fe(I)[mol/L]');
 view(30,20);
 
-figure;
+figure(4);
 surf(x,t,u4/1000.0,'edgecolor','none');
 set(gca,'xlim',[0.0 delta]);
 set(gca,'fontsize',11.5);
@@ -240,10 +243,10 @@ view(30,20);
 % hold off
 % legend('Fe3conc','Fe2conc','Fe3conc','Location','west');
 
-figure
+figure(5)
 plot(t,current_Fe3,t,current_Fe2,t,current_Fe1,t,current_Fe0,t,global_current,'LineWidth',1.5);
 
-figure
+figure(6)
 plot(E,global_current,'LineWidth',1.5);
 
 %title({'Steady state pH in KHCO_{3} = 0.1 M, \delta = 0.01 cm';' '});

@@ -1,11 +1,11 @@
 PMR
 
-check the Keqsmr Pressure term
+See why there is the bump. My guess is temperature position?
+start learning about the SMR plant what is happening. Start plant design in PRO/II
 
-DO THE CALCULATION OF THE ACTICVATION OF THE
-
+- would it be worth it to still have the HT and LT shift? then we would still need the PSA. or we could have the shift reactors still and just feed it back into the furnace 
 
 
 FeTTP
 
-Why does this paper talk about pH? do we care about pH?
+fix the code can use a struct if needed
