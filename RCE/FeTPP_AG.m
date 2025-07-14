@@ -183,14 +183,14 @@ Fe0conc = sol(nmesh,:,4)/1000.0;
 
 
 figure(1);
- surf(x,t,u1/1000.0,'edgecolor','none');
- set(gca,'xlim',[0.0 delta]);
- set(gca,'fontsize',11.5);
- %title('K^{+} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.008 cm');
- xlabel('Distance x [m]');
- ylabel('Time t [s]');
- zlabel('Fe(III)[mol/L]');
- view(30,20);
+surf(x,t,u1/1000.0,'edgecolor','none');
+set(gca,'xlim',[0.0 delta]);
+set(gca,'fontsize',11.5);
+%title('K^{+} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.008 cm');
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('Fe(III)[mol/L]');
+view(30,20);
 
 
 
