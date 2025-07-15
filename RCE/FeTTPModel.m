@@ -3,6 +3,10 @@ clear;
 
 %some things to do still fix the for loop at the bottom. Add in the E term! Include the calculation of the boundary layer thickness from the rotation speed.
 
+Expdata = readtable('ExperimentalFeTPP.xlsx');
+ExpE = Expdata.E_V_; %E in V
+ExpI = Expdata.current_A_; %I in A
+
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
@@ -16,6 +20,10 @@ c.half_cycle_time = abs(c.E_end - c.E_start)/c.scan_rate;
 
 time = 4*c.half_cycle_time; %total time of experiment [s] to complete 2 full cycles
 
+if mod(nmesh, 4) ~= 0
+    error('nmesh must be divisible by 4');
+end
+
 t_half = linspace(0, c.half_cycle_time, floor(nmesh/4));
 
 E1 = c.E_start - c.scan_rate * t_half;
@@ -25,7 +33,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.4e-4; % boundary layer thickness [m]
+delta = 0.6e-4; % boundary layer thickness [m]                 0.4
 mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
 
 c.T = 298.0;
@@ -37,18 +45,18 @@ c.C_Fe2_i = 0.000*1000.0; %initial Fe(II) bulk concentration at t=0 in [mol/m3] 
 c.C_Fe1_i = 0.000*1000.0; %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0.000*1000.0; %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 
-c.D0_Fe3 = 1.1e-010; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]
-c.D0_Fe2 = 6.7e-010; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
-c.D0_Fe1 = 4.6e-010; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
-c.D0_Fe0 = 5.7e-010; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+c.D0_Fe3 = 1.1e-11; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
+c.D0_Fe2 = 6.7e-11; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
+c.D0_Fe1 = 4.6e-11; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+c.D0_Fe0 = 5.7e-11; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
 
-c.k0_3_2 =0.00002; % rate constant Fe(III) to Fe(II) (mol/m2/s)
+c.k0_3_2 =0.00002; % rate constant Fe(III) to Fe(II) (mol/m2/s)                 %0.00002                     higher reaction rates mean steaper slopes
 c.k0_2_1 = 0.00002;% rate constant Fe(II) to Fe(I) (mol/m2/s)
 c.Fe1formation = 0; % Calculation of CO rate of formation at cathode surface (mol/m2/s)
 c.Fe0formation = 0; % Calculation of CO rate of formation at cathode surface (mol/m2/s
 
 m = 0; 
-xmesh = linspace(0,delta,nmesh); 
+xmesh = linspace(0,delta,nmesh);
 tspan = linspace(0,time,nmesh);
 
 sol = pdepe(m, @(x,t,u,dudx) pde(x,t,u,dudx,c), @(x) pdeic(x,c), ...
@@ -73,48 +81,51 @@ for i = 1:nmesh
 end
 global_current = -current_Fe3+current_Fe1+2*current_Fe0
 
-figure(1);
-surf(xmesh,tspan,u1/1000.0,'edgecolor','none');
-xlim([0.0, delta]);
-%title('K^{+} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.008 cm');
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('Fe(III)[mol/L]');
-view(30,20);
+% figure(1);
+% surf(xmesh,tspan,u1/1000.0,'edgecolor','none');
+% xlim([0.0, delta]);
+% %title('K^{+} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.008 cm');
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('Fe(III)[mol/L]');
+% view(30,20);
 
-figure(2);
-surf(xmesh,tspan,u2/1000.0,'edgecolor','none');
-xlim([0.0, delta]);
-%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('Fe(II)[mol/L]');
-view(30,20);
+% figure(2);
+% surf(xmesh,tspan,u2/1000.0,'edgecolor','none');
+% xlim([0.0, delta]);
+% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('Fe(II)[mol/L]');
+% view(30,20);
 
-figure(3);
-surf(xmesh,tspan,u3/1000.0,'edgecolor','none');
-xlim([0.0, delta]);
-%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('Fe(I)[mol/L]');
-view(30,20);
+% figure(3);
+% surf(xmesh,tspan,u3/1000.0,'edgecolor','none');
+% xlim([0.0, delta]);
+% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('Fe(I)[mol/L]');
+% view(30,20);
 
-figure(4);
-surf(xmesh,tspan,u4/1000.0,'edgecolor','none');
-xlim([0.0, delta]);
-%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('Fe(I)[mol/L]');
-view(30,20);
+% figure(4);
+% surf(xmesh,tspan,u4/1000.0,'edgecolor','none');
+% xlim([0.0, delta]);
+% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('Fe(I)[mol/L]');
+% view(30,20);
 
-figure(5)
-plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,tspan,global_current,'LineWidth',1.5);
+% figure(5)
+% plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,tspan,global_current,'LineWidth',1.5);
 
 figure(6)
-plot(E,global_current,'LineWidth',1.5);
-
+plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); 
+xlabel('E (V)');
+ylabel('Current (A)');
+title('Experimental vs Model Data');
+legend('Experimental', 'Model');
 
 function [c,f,s] = pde(x,t,u,dudx,const)
     c = [1; 1; 1; 1];
