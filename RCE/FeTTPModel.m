@@ -1,6 +1,12 @@
 clc;
 clear;
 
+%some things to do still fix the for loop at the bottom. Add in the E term! Include the calculation of the boundary layer thickness from the rotation speed.
+
+%#ok<*NUSED>
+%#ok<*GVMIS>
+%#ok<*INUSD>
+
 % CV waveform
 c.scan_rate = 0.2;      % V/s
 c.E_start = 0.0;
@@ -39,17 +45,25 @@ tspan = linspace(0,time,nmesh);
 
 sol = pdepe(m, @(x,t,u,dudx) pde(x,t,u,dudx,c), @(x) pdeic(x,c), ...
             @(xl,ul,xr,ur,t) pdebc(xl,ul,xr,ur,t,c), xmesh, tspan);
-u1 = sol(:,:,1);
+u1 = sol(:,:,1); %sol(t(i), x(j), component)
 u2 = sol(:,:,2);
 u3 = sol(:,:,3);
 u4 = sol(:,:,4);
 
-%questions for Tyler:
-% - how does the chemistry work?
-% - do we have the reaction rates/equations
-% - how do I inlcude the CO2?
-% - how are the currents of each component calculated?
-
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%Fix this still change away from the forloop and also include the calculation of the global current Fe1
+current_Fe3 = zeros(1,nmesh);
+current_Fe2 = zeros(1,nmesh);
+current_Fe1 = zeros(1,nmesh);
+current_Fe0 = zeros(1,nmesh);
+for i = 1:nmesh
+    dx = xmesh(nmesh) - xmesh(nmesh-1);
+    current_Fe3(i) = -c.F*c.D0_Fe3*(sol(i,nmesh,1)-sol(i,nmesh-1,1))/1000/dx;
+    current_Fe2(i) = -c.F*c.D0_Fe2*(sol(i,nmesh,2)-sol(i,nmesh-1,2))/1000/dx;
+    current_Fe1(i) = -c.F*c.D0_Fe1*(sol(i,nmesh,3)-sol(i,nmesh-1,3))/1000/dx;
+    current_Fe0(i) = -c.F*c.D0_Fe0*(sol(i,nmesh,4)-sol(i,nmesh-1,4))/1000/dx;
+end
+global_current = -current_Fe3+current_Fe1+2*current_Fe0
 
 figure(1);
 surf(xmesh,tspan,u1/1000.0,'edgecolor','none');

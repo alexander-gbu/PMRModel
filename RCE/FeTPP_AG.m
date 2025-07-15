@@ -250,7 +250,7 @@ figure(6)
 plot(E,global_current,'LineWidth',1.5);
 
 %title({'Steady state pH in KHCO_{3} = 0.1 M, \delta = 0.01 cm';' '});
-
+ 
 
 %final concentrations on the electrode surface
 u1final = u1(nmesh,nmesh)/1000.0;
