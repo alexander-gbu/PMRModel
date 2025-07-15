@@ -6,6 +6,7 @@ clear;
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
+nmesh = 500;
 
 % CV waveform
 c.scan_rate = 0.2;      % V/s
@@ -15,9 +16,11 @@ c.half_cycle_time = abs(c.E_end - c.E_start)/c.scan_rate;
 
 time = 4*c.half_cycle_time; %total time of experiment [s] to complete 2 full cycles
 
+
+
 %Constants
-c.delta = 0.1e-4; % boundary layer thickness [m]
-c.mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
+delta = 0.1e-4; % boundary layer thickness [m]
+mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
 
 c.T = 298.0;
 c.F = 96485.333;
@@ -36,9 +39,8 @@ c.D0_Fe0 = 5.7e-010; %Diffusion coefficient of HCO3- in water at 25C at infinite
 c.k0_3_2 =0.00002; % rate constant Fe(III) to Fe(II) (mol/m2/s)
 c.k0_2_1 = 0.00002;% rate constant Fe(II) to Fe(I) (mol/m2/s)
 c.Fe1formation = 0; % Calculation of CO rate of formation at cathode surface (mol/m2/s)
-c.Fe0formation = 0; % Calculation of CO rate of formation at cathode surface (mol/m2/s)
+c.Fe0formation = 0; % Calculation of CO rate of formation at cathode surface (mol/m2/s
 
-nmesh = 500; % intial mesh
 m = 0; 
 xmesh = linspace(0,c.delta,nmesh); 
 tspan = linspace(0,time,nmesh);
@@ -67,7 +69,7 @@ global_current = -current_Fe3+current_Fe1+2*current_Fe0
 
 figure(1);
 surf(xmesh,tspan,u1/1000.0,'edgecolor','none');
-xlim([0.0, c.delta]);
+xlim([0.0, delta]);
 %title('K^{+} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.008 cm');
 xlabel('Distance x [m]');
 ylabel('Time t [s]');
@@ -76,7 +78,7 @@ view(30,20);
 
 figure(2);
 surf(xmesh,tspan,u2/1000.0,'edgecolor','none');
-xlim([0.0, c.delta]);
+xlim([0.0, delta]);
 %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
 xlabel('Distance x [m]');
 ylabel('Time t [s]');
@@ -85,7 +87,7 @@ view(30,20);
 
 figure(3);
 surf(xmesh,tspan,u3/1000.0,'edgecolor','none');
-xlim([0.0, c.delta]);
+xlim([0.0, delta]);
 %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
 xlabel('Distance x [m]');
 ylabel('Time t [s]');
@@ -94,7 +96,7 @@ view(30,20);
 
 figure(4);
 surf(xmesh,tspan,u4/1000.0,'edgecolor','none');
-xlim([0.0, c.delta]);
+xlim([0.0, delta]);
 %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
 xlabel('Distance x [m]');
 ylabel('Time t [s]');
