@@ -16,10 +16,16 @@ c.half_cycle_time = abs(c.E_end - c.E_start)/c.scan_rate;
 
 time = 4*c.half_cycle_time; %total time of experiment [s] to complete 2 full cycles
 
+t_half = linspace(0, c.half_cycle_time, floor(nmesh/4));
 
+E1 = c.E_start - c.scan_rate * t_half;
+E2 = c.E_end + c.scan_rate * t_half;
+E3 = c.E_start - c.scan_rate * t_half;
+E4 = c.E_end + c.scan_rate * t_half;
+E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.1e-4; % boundary layer thickness [m]
+delta = 0.4e-4; % boundary layer thickness [m]
 mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
 
 c.T = 298.0;
@@ -42,7 +48,7 @@ c.Fe1formation = 0; % Calculation of CO rate of formation at cathode surface (mo
 c.Fe0formation = 0; % Calculation of CO rate of formation at cathode surface (mol/m2/s
 
 m = 0; 
-xmesh = linspace(0,c.delta,nmesh); 
+xmesh = linspace(0,delta,nmesh); 
 tspan = linspace(0,time,nmesh);
 
 sol = pdepe(m, @(x,t,u,dudx) pde(x,t,u,dudx,c), @(x) pdeic(x,c), ...
@@ -60,7 +66,7 @@ current_Fe1 = zeros(1,nmesh);
 current_Fe0 = zeros(1,nmesh);
 for i = 1:nmesh
     dx = xmesh(nmesh) - xmesh(nmesh-1);
-    current_Fe3(i) = -c.F*c.D0_Fe3*(sol(i,nmesh,1)-sol(i,nmesh-1,1))/1000/dx;
+    current_Fe3(i) = -c.F*c.D0_Fe3*(sol(i,nmesh,1)-sol(i,nmesh-1,1))/1000/dx; % reaction is at the right boundary
     current_Fe2(i) = -c.F*c.D0_Fe2*(sol(i,nmesh,2)-sol(i,nmesh-1,2))/1000/dx;
     current_Fe1(i) = -c.F*c.D0_Fe1*(sol(i,nmesh,3)-sol(i,nmesh-1,3))/1000/dx;
     current_Fe0(i) = -c.F*c.D0_Fe0*(sol(i,nmesh,4)-sol(i,nmesh-1,4))/1000/dx;
