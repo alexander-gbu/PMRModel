@@ -4,9 +4,10 @@ clear;
 % some things to do still fix the for loop at the bottom. 
 % Do the calculation of the boundary layer thickness from the rotation speed.
 
-Expdata = readtable('ExperimentalFeTPP.xlsx');
-ExpE = Expdata.E_V_; %E in V
-ExpI = Expdata.current_A_; %I in A
+Expdata = readtable('NonCorrectedCVProcessingwithRPM05_05_25.xlsx');
+% Expdata.Properties.VariableNames
+ExpE = Expdata.x100E; %E in V
+ExpI = Expdata.x100Current; %I in A
 
 %#ok<*NUSED>
 %#ok<*GVMIS>
@@ -34,7 +35,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 1.2e-4; % boundary layer thickness [m]                 0.4
+delta = 2.67E-05; % boundary layer thickness [m]                 
 mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
 
 c.T = 298.0;
@@ -122,7 +123,7 @@ global_current = -current_Fe3+current_Fe1+2*current_Fe0;
 % plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,tspan,global_current,'LineWidth',1.5);
 
 figure(6)
-plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); 
+plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); %(floor(nmesh/2):end)
 xlabel('E (V)');
 ylabel('Current (A)');
 title('Experimental vs Model Data');
