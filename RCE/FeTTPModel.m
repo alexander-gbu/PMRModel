@@ -1,7 +1,8 @@
 clc;
 clear;
 
-%some things to do still fix the for loop at the bottom. Add in the E term! Include the calculation of the boundary layer thickness from the rotation speed.
+% some things to do still fix the for loop at the bottom. 
+% Do the calculation of the boundary layer thickness from the rotation speed.
 
 Expdata = readtable('ExperimentalFeTPP.xlsx');
 ExpE = Expdata.E_V_; %E in V
@@ -10,7 +11,7 @@ ExpI = Expdata.current_A_; %I in A
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
-nmesh = 500;
+nmesh = 100;
 
 % CV waveform
 c.scan_rate = 0.2;      % V/s
@@ -33,7 +34,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.6e-4; % boundary layer thickness [m]                 0.4
+delta = 1.2e-4; % boundary layer thickness [m]                 0.4
 mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
 
 c.T = 298.0;
@@ -45,10 +46,10 @@ c.C_Fe2_i = 0.000*1000.0; %initial Fe(II) bulk concentration at t=0 in [mol/m3] 
 c.C_Fe1_i = 0.000*1000.0; %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0.000*1000.0; %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 
-c.D0_Fe3 = 1.1e-11; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
-c.D0_Fe2 = 6.7e-11; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
-c.D0_Fe1 = 4.6e-11; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
-c.D0_Fe0 = 5.7e-11; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+c.D0_Fe3 = 1.1e-10; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
+c.D0_Fe2 = 6.7e-10; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
+c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+c.D0_Fe0 = 5.7e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
 
 c.k0_3_2 =0.00002; % rate constant Fe(III) to Fe(II) (mol/m2/s)                 %0.00002                     higher reaction rates mean steaper slopes
 c.k0_2_1 = 0.00002;% rate constant Fe(II) to Fe(I) (mol/m2/s)
@@ -79,7 +80,7 @@ for i = 1:nmesh
     current_Fe1(i) = -c.F*c.D0_Fe1*(sol(i,nmesh,3)-sol(i,nmesh-1,3))/1000/dx;
     current_Fe0(i) = -c.F*c.D0_Fe0*(sol(i,nmesh,4)-sol(i,nmesh-1,4))/1000/dx;
 end
-global_current = -current_Fe3+current_Fe1+2*current_Fe0
+global_current = -current_Fe3+current_Fe1+2*current_Fe0;
 
 % figure(1);
 % surf(xmesh,tspan,u1/1000.0,'edgecolor','none');
