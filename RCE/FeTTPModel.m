@@ -12,7 +12,7 @@ ExpI = Expdata.x400Current; %I in A
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
-xmesh = 500;
+xmesh = 100;
 tmesh = xmesh;
 
 % CV waveform
@@ -62,14 +62,15 @@ function [r3_2, r2_1, r1_0] = reactions(C, E, const)
     k0_3_2 = 0.00002; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
     k0_2_1 = 0.00001;% rate constant Fe(II) to Fe(I) (m/s)
     k0_1_0 = 0.00001;
+    alpha = 0.3;
 
     E0_3_2=-0.25; %from data
     E0_2_1=-1.3;
     E0_1_0=-2.0;
 
-    r3_2 = k0_3_2*(C(1)*exp(-0.5*(E-E0_3_2)*const.F/const.R/const.T)-C(2)*exp(0.5*(E-E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
-    r2_1 = k0_2_1*(C(2)*exp(-0.5*(E-E0_2_1)*const.F/const.R/const.T)-C(3)*exp(0.5*(E-E0_2_1)*const.F/const.R/const.T));
-    r1_0 = k0_1_0*(C(3)*exp(-0.5*(E-E0_1_0)*const.F/const.R/const.T)-C(4)*exp(0.5*(E-E0_1_0)*const.F/const.R/const.T));
+    r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
+    r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-E0_2_1)*const.F/const.R/const.T));
+    r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-E0_1_0)*const.F/const.R/const.T));
 
     % if r2_1 > 10^-3
     %     r2_1 = 10^-3;
