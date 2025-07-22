@@ -5,12 +5,20 @@ PMR
 FeTTP
 
 - do the reynolds number thing like in junbecks paper
+    - Do it also with the FeTTP
+
 - look into the global current calculation
-    - look at the units and see if it all works out because it might be that we are doing current in units per area
+    - units work out
     - the one based on diffusion, I am pretty sure that is not legal
         - investigate what happens when you set it to a set rate because techincally that is how a resistor conthingy works
+    - cap the reaction rate for now and then we can do more theoretical work
 
 Add the water without a reaction rate!
+- There is no reaction with just the water 
+    - the water in acetonitrile stays together
+- Then we can also add the CO2 to CO reaction if I am really feeling it.
+- so then how does the CO2 go to CO if the water does not react?
+
 
 k0 will become a fitting parameter
 
