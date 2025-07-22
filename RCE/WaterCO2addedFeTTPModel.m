@@ -123,13 +123,13 @@ global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0)/1000/c.A;
 for i = 1:tmesh
     t = tspan(i);
     [r3_2, r2_1, r1_0] = ElecReactions(sol(i, xmesh-1, :), E(i), c);
-    current_Fe3(i) = 1*c.F*c.A*(r3_2);
-    current_Fe2(i) = 1*c.F*c.A*(r2_1);
-    current_Fe1(i) = 1*c.F*c.A*(r1_0);
-    current_Fe0(i) = 1*c.F*c.A*(0);
+    current_Fe3(i) = (r3_2); %1*c.F*c.A*
+    current_Fe2(i) = (r2_1); %1*c.F*c.A*
+    current_Fe1(i) = (r1_0); %1*c.F*c.A*
+    current_Fe0(i) = (0); %1*c.F*c.A*
 end
 % current_Fe3
-global_current = (current_Fe3-current_Fe2-current_Fe1); %-current_Fe0;
+global_current = (-current_Fe3-current_Fe2-current_Fe1)/1000; %-current_Fe0
 
 figure(1);
 surf(xspan,tspan,u1/1000.0,'edgecolor','none');
@@ -195,9 +195,11 @@ zlabel('CO[mol/L]');
 view(30,20);
 
 figure(8)
-plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,tspan,global_currentOld,'LineWidth',1.5);
+plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
 ylim([-10, 10]);
-legend('Fe3', 'Fe2', 'Fe1', 'Fe0', 'global');
+ylabel('reaction rates [mol/m2/s]');
+xlabel('Time t [s]');
+legend('Fe3', 'Fe2', 'Fe1', 'Fe0'); %, 'global'
 
 figure(9)
 plot(ExpE, ExpI, 'r-', E, global_currentOld, 'b--'); %(floor(nmesh/2):end)
