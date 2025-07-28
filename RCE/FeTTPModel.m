@@ -6,8 +6,8 @@ clear;
 
 Expdata = readtable('CVProcessingwithRPM05_05_25.xlsx');
 % Expdata.Properties.VariableNames
-ExpE = Expdata.x400IRCorrected; %E in V
-ExpI = Expdata.x400Current; %I in A
+ExpE = Expdata.x100IRCorrected; %E in V
+ExpI = Expdata.x100Current; %I in A
 
 %#ok<*NUSED>
 %#ok<*GVMIS>
@@ -36,7 +36,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 1.58E-05; % boundary layer thickness [m]                 
+delta = 1.85E-04; % boundary layer thickness [m]                 
 mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
 
 c.T = 298.0;
@@ -49,10 +49,10 @@ c.C_Fe2_i = 0.000*1000.0; %initial Fe(II) bulk concentration at t=0 in [mol/m3] 
 c.C_Fe1_i = 0.000*1000.0; %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0.000*1000.0; %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 
-c.D0_Fe3 = 1.1e-10; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
-c.D0_Fe2 = 6.7e-10; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
-c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
-c.D0_Fe0 = 5.7e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+c.D0_Fe3 = 1.06e-9; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
+c.D0_Fe2 = 6.7e-9; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
+c.D0_Fe1 = 4.6e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+c.D0_Fe0 = 5.7e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
 
 c.E0_3_2=-0.25; %from data
 c.E0_2_1=-1.3;
@@ -153,10 +153,10 @@ global_current = (current_Fe3-current_Fe2-current_Fe1); %-current_Fe0;
 % zlabel('Fe(I)[mol/L]');
 % view(30,20);
 
-figure(5)
-plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,tspan,global_currentOld,'LineWidth',1.5);
-ylim([-10, 10]);
-legend('Fe3', 'Fe2', 'Fe1', 'Fe0', 'global');
+% figure(5)
+% plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,tspan,global_currentOld,'LineWidth',1.5);
+% ylim([-10, 10]);
+% legend('Fe3', 'Fe2', 'Fe1', 'Fe0', 'global');
 
 figure(6)
 plot(ExpE, ExpI, 'r-', E, global_currentOld, 'b--'); %(floor(nmesh/2):end)
@@ -165,12 +165,12 @@ ylabel('Current (A)');
 title('Experimental vs Model Data');
 legend('Experimental', 'Model');
 
-figure(7)
-plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); %(floor(nmesh/2):end)
-xlabel('E (V)');
-ylabel('Current (A)');
-title('Experimental vs Model Data');
-legend('Experimental', 'Model');
+% figure(7)
+% plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); %(floor(nmesh/2):end)
+% xlabel('E (V)');
+% ylabel('Current (A)');
+% title('Experimental vs Model Data');
+% legend('Experimental', 'Model');
 
 function [c,f,s] = pde(x,t,u,dudx,const)
     c = [1; 1; 1; 1];
