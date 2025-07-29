@@ -4,10 +4,10 @@ clear;
 % some things to do still fix the for loop at the bottom. 
 % Do the calculation of the boundary layer thickness from the rotation speed.
 
-Expdata = readtable('CVProcessingwithRPM05_05_25.xlsx');
+Expdata = readtable('FeTTPReactionsH2OCO2.xlsx');
 % Expdata.Properties.VariableNames
-ExpE = Expdata.x400IRCorrected; %E in V
-ExpI = Expdata.x400Current; %I in A
+ExpE = Expdata.x100IRCorr_V_; %E in V
+ExpI = Expdata.x100Current_A_; %I in A
 
 %#ok<*NUSED>
 %#ok<*GVMIS>
