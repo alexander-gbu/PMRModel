@@ -6,13 +6,13 @@ clear;
 
 Expdata = readtable('CVProcessingwithRPM05_05_25.xlsx');
 % Expdata.Properties.VariableNames
-ExpE = Expdata.x100IRCorrected; %E in V
-ExpI = Expdata.x100Current; %I in A
+ExpE = Expdata.x800IRCorrected; %E in V
+ExpI = Expdata.x800Current; %I in A
 
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
-xmesh = 100;
+xmesh = 200;
 tmesh = xmesh;
 
 % CV waveform
@@ -36,8 +36,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 1.85E-04; % boundary layer thickness [m]                 
-mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
+delta = 2.9e-5; % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
@@ -59,7 +58,7 @@ c.E0_2_1=-1.3;
 c.E0_1_0=-2.0;
 
 function [r3_2, r2_1, r1_0] = reactions(C, E, const)
-    k0_3_2 = 0.00002; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
+    k0_3_2 = 0.00005; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
     k0_2_1 = 0.00001;% rate constant Fe(II) to Fe(I) (m/s)
     k0_1_0 = 0.00001;
     alpha = 0.3;
@@ -93,29 +92,23 @@ u4 = sol(:,:,4);
 
 %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 %Fix this still change away from the forloop and also include the calculation of the global current Fe1
-current_Fe3 = zeros(1,tmesh);
-current_Fe2 = zeros(1,tmesh);
-current_Fe1 = zeros(1,tmesh);
-current_Fe0 = zeros(1,tmesh);
-for i = 1:tmesh
-    dx = xspan(xmesh) - xspan(xmesh-1);
-    current_Fe3(i) = -c.F*c.D0_Fe3*(sol(i,xmesh,1)-sol(i,xmesh-1,1))/dx; % reaction is at the right boundary
-    current_Fe2(i) = -c.F*c.D0_Fe2*(sol(i,xmesh,2)-sol(i,xmesh-1,2))/dx;
-    current_Fe1(i) = -c.F*c.D0_Fe1*(sol(i,xmesh,3)-sol(i,xmesh-1,3))/dx;
-    current_Fe0(i) = -c.F*c.D0_Fe0*(sol(i,xmesh,4)-sol(i,xmesh-1,4))/dx;
-end
-global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0)/1000;
+dx = xspan(xmesh) - xspan(xmesh-1);
+current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(floor(tmesh/2):end,xmesh,1)-sol(floor(tmesh/2):end,xmesh-1,1))/dx; % reaction is at the right boundary
+current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(floor(tmesh/2):end,xmesh,2)-sol(floor(tmesh/2):end,xmesh-1,2))/dx;
+current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(floor(tmesh/2):end,xmesh,3)-sol(floor(tmesh/2):end,xmesh-1,3))/dx;
+current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(floor(tmesh/2):end,xmesh,4)-sol(floor(tmesh/2):end,xmesh-1,4))/dx;
+global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0);
 
-for i = 1:tmesh
-    t = tspan(i);
-    [r3_2, r2_1, r1_0] = reactions(sol(i, xmesh-1, :), E(i), c);
-    current_Fe3(i) = 1*c.F*c.A*(r3_2);
-    current_Fe2(i) = 1*c.F*c.A*(r2_1);
-    current_Fe1(i) = 1*c.F*c.A*(r1_0);
-    current_Fe0(i) = 1*c.F*c.A*(0);
-end
-% current_Fe3
-global_current = (current_Fe3-current_Fe2-current_Fe1); %-current_Fe0;
+% for i = 1:tmesh
+%     t = tspan(i);
+%     [r3_2, r2_1, r1_0] = reactions(sol(i, xmesh-1, :), E(i), c);
+%     current_Fe3(i) = 1*c.F*c.A*(r3_2);
+%     current_Fe2(i) = 1*c.F*c.A*(r2_1);
+%     current_Fe1(i) = 1*c.F*c.A*(r1_0);
+%     current_Fe0(i) = 1*c.F*c.A*(0);
+% end
+% % current_Fe3
+% global_current = -(current_Fe3+current_Fe2+current_Fe1); %-current_Fe0;
 
 % figure(1);
 % surf(xspan,tspan,u1/1000.0,'edgecolor','none');
@@ -159,16 +152,17 @@ global_current = (current_Fe3-current_Fe2-current_Fe1); %-current_Fe0;
 % legend('Fe3', 'Fe2', 'Fe1', 'Fe0', 'global');
 
 figure(6)
-plot(ExpE, ExpI, 'r-', E, global_currentOld, 'b--'); %(floor(nmesh/2):end)
+plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_currentOld, 'b--'); %(floor(nmesh/2):end)
 xlabel('E (V)');
 ylabel('Current (A)');
 title('Experimental vs Model Data');
 legend('Experimental', 'Model');
 
 % figure(7)
-% plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); %(floor(nmesh/2):end)
+% plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_current(floor(tmesh/2):end), 'b--'); %(floor(nmesh/2):end)
 % xlabel('E (V)');
 % ylabel('Current (A)');
+% ylim([-10e-3, 1e-3]);
 % title('Experimental vs Model Data');
 % legend('Experimental', 'Model');
 

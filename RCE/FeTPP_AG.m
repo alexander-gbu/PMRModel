@@ -62,10 +62,10 @@ C_Fe0_i = 0.000*1000.0; %initial Fe(0) bulk concentration at t=0 in [mol/m3] uni
 %-----------------------------
 %Diffusion coefficients 
 global D0_Fe3 D0_Fe2 D0_Fe1 D0_Fe0
-D0_Fe3 = 1.1e-010; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]
-D0_Fe2 = 6.7e-010; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
-D0_Fe1 = 4.6e-010; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
-D0_Fe0 = 5.7e-010; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+D0_Fe3 = 1.1e-9; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m/s]
+D0_Fe2 = 6.7e-9; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m/s]
+D0_Fe1 = 4.6e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
+D0_Fe0 = 5.7e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
 
 %-----------------------------
 %Diffusion coefficients corrected for varying electrolyte concentration
