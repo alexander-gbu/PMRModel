@@ -4,19 +4,19 @@ clear;
 % some things to do still fix the for loop at the bottom. 
 % Do the calculation of the boundary layer thickness from the rotation speed.
 
-Expdata = readtable('CVProcessingwithRPM05_05_25.xlsx');
+Expdata = readtable('ScanRateCVs.xlsx');
 % Expdata.Properties.VariableNames
-ExpE = Expdata.x800IRCorrected; %E in V
-ExpI = Expdata.x800Current; %I in A
+ExpE = Expdata.x50srIRCorr_V_; %E in V
+ExpI = Expdata.x50srCurrent_A_; %I in A
 
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
-xmesh = 200;
+xmesh = 100;
 tmesh = xmesh;
 
 % CV waveform
-c.scan_rate = 0.2;      % V/s
+c.scan_rate = 0.05;      % V/s
 c.E_start = 0.0;
 c.E_end = -2.5;
 c.half_cycle_time = abs(c.E_end - c.E_start)/c.scan_rate;
@@ -36,7 +36,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 2.9e-5; % boundary layer thickness [m]
+delta = 1.0e-3; % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
