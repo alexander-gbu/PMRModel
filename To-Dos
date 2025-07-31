@@ -1,5 +1,9 @@
 PMR
 
+it basically needs its final couple of tweaks and then we need to combine and compare. Make sure that all files are equal with constants and reaction rates
+- combined out fixed temp should be made into its own file where we can print out everything but it is updated with the newest constants and stuff
+- Need to check out the temp kink and why that happens. It is perplexing me
+- have to adjust initial guess if we are getting rid of the temperature 
 
 
 FeTTP
