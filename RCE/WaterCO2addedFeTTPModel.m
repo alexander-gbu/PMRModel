@@ -1,5 +1,6 @@
 clc;
 clear;
+% close all;
 
 % some things to do still fix the for loop at the bottom. 
 % Do the calculation of the boundary layer thickness from the rotation speed.
@@ -49,7 +50,7 @@ c.C_Fe2_i = 0;              %initial Fe(II) bulk concentration at t=0 in [mol/m3
 c.C_Fe1_i = 0;   %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0;   %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 c.C_H2O_i = 0.06*1000;      %initial water bulk concentration [mol/m3]. water does not dissociate in MeCN
-c.C_CO2_i = 0.3*1000;
+c.C_CO2_i = 0.03*1000;
 c.C_CO_i = 0;
 c.C_OH_i = 0;
 
@@ -61,7 +62,7 @@ c.D0_Fe0 = 5.7e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite d
 c.D0_H2O = 5.78e-9; %https://doi.org/10.1007/978-3-662-54089-3
 c.D0_CO2 = 2.89e-9; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
 c.D0_CO = 6e-9;
-c.D0_OH = 5e-9;
+c.D0_OH = 2.1e-9;
 
 c.E0_3_2=-0.25; %from data
 c.E0_2_1=-1.3;
@@ -69,7 +70,7 @@ c.E0_1_0=-2.0;
 
 function rCO2_CO = HomoReaction(C_Fe0, C_H2O, C_CO2)
     %FeTTP(0) + CO2 + H2O = FeTTP(II) + CO + 2HO-
-    kco = 3*10^-3;
+    kco = 3*10^-2;
     rCO2_CO = kco*C_Fe0.*C_H2O.*C_CO2;
 end
 
@@ -110,7 +111,8 @@ current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(:,xmesh,1)-sol(:,xmesh-1,1))/dx; % reaction
 current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
 current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
 current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
-global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0);
+current_CO = -c.F*c.A*c.D0_CO*(sol(:,xmesh,7)-sol(:,xmesh-1,7))/dx;
+global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0+current_CO); %
 
 for i = 1:tmesh
     t = tspan(i);
@@ -132,32 +134,32 @@ global_current = (-current_Fe3-current_Fe2-current_Fe1)/1000; %-current_Fe0
 % zlabel('Fe(III)[mol/L]');
 % view(30,20);
 
-% figure(2);
-% surf(xspan,tspan,u2/1000.0,'edgecolor','none');
-% xlim([0.0, delta]);
-% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-% xlabel('Distance x [m]');
-% ylabel('Time t [s]');
-% zlabel('Fe(II)[mol/L]');
-% view(30,20);
+figure(2);
+surf(xspan,tspan,u2/1000.0,'edgecolor','none');
+xlim([0.0, delta]);
+%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('Fe(II)[mol/L]');
+view(30,20);
 
-% figure(3);
-% surf(xspan,tspan,u3/1000.0,'edgecolor','none');
-% xlim([0.0, delta]);
-% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-% xlabel('Distance x [m]');
-% ylabel('Time t [s]');
-% zlabel('Fe(I)[mol/L]');
-% view(30,20);
+figure(3);
+surf(xspan,tspan,u3/1000.0,'edgecolor','none');
+xlim([0.0, delta]);
+%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('Fe(I)[mol/L]');
+view(30,20);
 
-% figure(4);
-% surf(xspan,tspan,u4/1000.0,'edgecolor','none');
-% xlim([0.0, delta]);
-% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-% xlabel('Distance x [m]');
-% ylabel('Time t [s]');
-% zlabel('Fe(0)[mol/L]');
-% view(30,20);
+figure(4);
+surf(xspan,tspan,u4/1000.0,'edgecolor','none');
+xlim([0.0, delta]);
+%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('Fe(0)[mol/L]');
+view(30,20);
 
 % figure(5);
 % surf(xspan,tspan,sol(:,:,5)/1000.0,'edgecolor','none');
@@ -177,14 +179,14 @@ global_current = (-current_Fe3-current_Fe2-current_Fe1)/1000; %-current_Fe0
 % zlabel('CO2[mol/L]');
 % view(30,20);
 
-% figure(7);
-% surf(xspan,tspan,sol(:,:,7)/1000.0,'edgecolor','none');
-% xlim([0.0, delta]);
-% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-% xlabel('Distance x [m]');
-% ylabel('Time t [s]');
-% zlabel('CO[mol/L]');
-% view(30,20);
+figure(7);
+surf(xspan,tspan,sol(:,:,7)/1000.0,'edgecolor','none');
+xlim([0.0, delta]);
+%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('CO[mol/L]');
+view(30,20);
 
 % figure(8)
 % plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,

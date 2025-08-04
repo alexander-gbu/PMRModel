@@ -6,8 +6,8 @@ clear;
 
 Expdata = readtable('CVProcessingwithRPM05_05_25.xlsx');
 % Expdata.Properties.VariableNames
-ExpE = Expdata.x800IRCorrected; %E in V
-ExpI = Expdata.x800Current; %I in A
+ExpE = Expdata.x200IRCorrected; %E in V
+ExpI = Expdata.x200Current; %I in A
 
 %#ok<*NUSED>
 %#ok<*GVMIS>
@@ -36,7 +36,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 2.9e-5; % boundary layer thickness [m]
+delta = 6.1e-5; % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol

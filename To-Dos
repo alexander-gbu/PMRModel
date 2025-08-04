@@ -2,14 +2,12 @@ PMR
 
 
 
-FeTTP
+FeTTP: k0 will become a fitting parameter
 
-Look into the diffusion coefficients of FeTTP(III) to fit this better and then you would need to adjust the thickness. 
- - can fit the diffusion coefficients by using the god model joon baek
+- The CO2 steals the electrons from the FeTTP. So just subtract that from the currents and then the foot should be fixed.
+- put in the equation so that you can just change the rotation rate and it fixes everything
 
 CO2R modeling:
  - improve the diffusion constants
 
- The CO2 steals the electrons from the FeTTP. So just subtract that from the currents and then the foot should be fixed.
-
-k0 will become a fitting parameter
+ 
