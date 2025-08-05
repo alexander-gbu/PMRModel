@@ -1,18 +1,20 @@
 clc;
 clear;
 
-% some things to do still fix the for loop at the bottom. 
-% Do the calculation of the boundary layer thickness from the rotation speed.
-
-Expdata = readtable('CVProcessingwithRPM05_05_25.xlsx');
-% Expdata.Properties.VariableNames
-ExpE = Expdata.x200IRCorrected; %E in V
-ExpI = Expdata.x200Current; %I in A
-
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
-xmesh = 200;
+
+rpm = 400;
+
+Expdata = readtable('CVProcessingwithRPM05_05_25.xlsx');
+% Expdata.Properties.VariableNames
+Evar = sprintf('x%dIRCorrected', rpm);
+Ivar = sprintf('x%dCurrent', rpm);
+ExpE = Expdata.(Evar); %E in V
+ExpI = Expdata.(Ivar); %I in A
+
+xmesh = 500;
 tmesh = xmesh;
 
 % CV waveform
@@ -36,7 +38,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 6.1e-5; % boundary layer thickness [m]
+delta = 0.001385/(rpm^0.59) % boundary layer thickness [m]  
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
@@ -53,23 +55,20 @@ c.D0_Fe2 = 6.7e-9; %Diffusion coefficient of (CO3)2- in water at 25C at infinite
 c.D0_Fe1 = 4.6e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
 c.D0_Fe0 = 5.7e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m/s]
 
-c.E0_3_2=-0.25; %from data
-c.E0_2_1=-1.3;
-c.E0_1_0=-2.0;
+c.E0_3_2 = -0.2; %from data
+c.E0_2_1 = -1.3;
+c.E0_1_0 = -1.85;
+c.k0_3_2 = 0.00002;
 
 function [r3_2, r2_1, r1_0] = reactions(C, E, const)
-    k0_3_2 = 0.00005; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
-    k0_2_1 = 0.00001;% rate constant Fe(II) to Fe(I) (m/s)
+    k0_3_2 = const.k0_3_2; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
+    k0_2_1 = 0.00002;% rate constant Fe(II) to Fe(I) (m/s)
     k0_1_0 = 0.00001;
-    alpha = 0.3;
+    alpha = 0.5;
 
-    E0_3_2=-0.25; %from data
-    E0_2_1=-1.3;
-    E0_1_0=-2.0;
-
-    r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
-    r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-E0_2_1)*const.F/const.R/const.T));
-    r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-E0_1_0)*const.F/const.R/const.T));
+    r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
+    r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
+    r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
 end
 
 m = 0; 
@@ -142,11 +141,11 @@ global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0);
 % ylim([-10, 10]);
 % legend('Fe3', 'Fe2', 'Fe1', 'Fe0', 'global');
 
-figure(6)
+figure()
 plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_currentOld, 'b--'); %(floor(nmesh/2):end)
 xlabel('E (V)');
 ylabel('Current (A)');
-title('Experimental vs Model Data');
+title("Experimental vs Model Data"); % with k032 = " + c.k0_3_2
 legend('Experimental', 'Model');
 
 % figure(7)

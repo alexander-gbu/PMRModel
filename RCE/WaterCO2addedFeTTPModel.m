@@ -2,18 +2,20 @@ clc;
 clear;
 % close all;
 
-% some things to do still fix the for loop at the bottom. 
-% Do the calculation of the boundary layer thickness from the rotation speed.
-
-Expdata = readtable('FeTTPReactionsH2OCO2.xlsx');
-% Expdata.Properties.VariableNames
-ExpE = Expdata.x200IRCorr_V_; %E in V
-ExpI = Expdata.x200Current_A_; %I in A
-
 %#ok<*NUSED>
 %#ok<*GVMIS>
 %#ok<*INUSD>
-xmesh = 200;
+
+rpm = 200;
+
+Expdata = readtable('FeTTPReactionsH2OCO2.xlsx');
+% Expdata.Properties.VariableNames
+Evar = sprintf('x%dIRCorr_V_', rpm);
+Ivar = sprintf('x%dCurrent_A_', rpm);
+ExpE = Expdata.(Evar); %E in V
+ExpI = Expdata.(Ivar); %I in A
+
+xmesh = 500;
 tmesh = xmesh;
 
 % CV waveform
@@ -37,8 +39,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 6.1e-05; % boundary layer thickness [m]                 
-mu = 8.90e-4; % viscosity of water at 25C [Pa.s]
+delta = 0.001385/(rpm^0.59) % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
@@ -50,7 +51,7 @@ c.C_Fe2_i = 0;              %initial Fe(II) bulk concentration at t=0 in [mol/m3
 c.C_Fe1_i = 0;   %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0;   %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 c.C_H2O_i = 0.06*1000;      %initial water bulk concentration [mol/m3]. water does not dissociate in MeCN
-c.C_CO2_i = 0.03*1000;
+c.C_CO2_i = 0.09*1000;
 c.C_CO_i = 0;
 c.C_OH_i = 0;
 
@@ -70,7 +71,7 @@ c.E0_1_0=-2.0;
 
 function rCO2_CO = HomoReaction(C_Fe0, C_H2O, C_CO2)
     %FeTTP(0) + CO2 + H2O = FeTTP(II) + CO + 2HO-
-    kco = 3*10^-2;
+    kco = 3*10^-3;
     rCO2_CO = kco*C_Fe0.*C_H2O.*C_CO2;
 end
 
@@ -78,21 +79,15 @@ function [r3_2, r2_1, r1_0] = ElecReactions(C, E, const)
     k0_3_2 = 0.00005; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
     k0_2_1 = 0.00001;% rate constant Fe(II) to Fe(I) (m/s)
     k0_1_0 = 0.00001;
+    alpha = 0.5;
 
     E0_3_2=-0.25; %from data
     E0_2_1=-1.3;
     E0_1_0=-2.0;
 
-    r3_2 = k0_3_2*(C(1)*exp(-0.5*(E-E0_3_2)*const.F/const.R/const.T)-C(2)*exp(0.5*(E-E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
-    r2_1 = k0_2_1*(C(2)*exp(-0.5*(E-E0_2_1)*const.F/const.R/const.T)-C(3)*exp(0.5*(E-E0_2_1)*const.F/const.R/const.T));
-    r1_0 = k0_1_0*(C(3)*exp(-0.5*(E-E0_1_0)*const.F/const.R/const.T)-C(4)*exp(0.5*(E-E0_1_0)*const.F/const.R/const.T));
-
-    % if r2_1 > 10^-3
-    %     r2_1 = 10^-3;
-    % end
-    % if r1_0 > 10^-3
-    %     r1_0 = 10^-3;
-    % end
+    r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
+    r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-E0_2_1)*const.F/const.R/const.T));
+    r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-E0_1_0)*const.F/const.R/const.T));
 end
 
 m = 0; 
