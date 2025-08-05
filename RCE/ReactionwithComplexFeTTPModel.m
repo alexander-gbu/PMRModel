@@ -6,7 +6,7 @@ clear;
 %#ok<*GVMIS>
 %#ok<*INUSD>
 
-rpm = 100;
+rpm = 200;
 
 Expdata = readtable('FeTTPReactionsH2OCO2.xlsx');
 % Expdata.Properties.VariableNames
@@ -15,7 +15,7 @@ Ivar = sprintf('x%dCurrent_A_', rpm);
 ExpE = Expdata.(Evar); %E in V
 ExpI = Expdata.(Ivar); %I in A
 
-xmesh = 200;
+xmesh = 100;
 tmesh = xmesh;
 
 % CV waveform
@@ -61,7 +61,7 @@ c.D0_Fe3 = 1.06e-9; %Diffusion coefficient of CO2 in water at 25C at infinite di
 c.D0_Fe2 = 6.7e-9; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m2/s]
 c.D0_Fe1 = 4.6e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
 c.D0_Fe0 = 5.7e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
-c.D0_FeCO2 = 4e-9; %GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
+c.D0_FeCO2 = 4e-9; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
 c.D0_H2O = 5.78e-9; %https://doi.org/10.1007/978-3-662-54089-3
 c.D0_CO2 = 2.89e-9; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
 c.D0_CO = 6e-9;
@@ -73,7 +73,7 @@ c.E0_1_0 = -2.08;
 
 function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_H2O, C_CO2)
     %FeTTP(0) + CO2 = FeTTP(II)CO2
-    kFeCO2 = 2*10^-1;
+    kFeCO2 = 5*10^-1;
     rFeCO2 = kFeCO2.*C_Fe0.*C_CO2;
     %FeTTP(II)CO2 + H2O = FeTTP(II) + CO + 2HO-
     kco = 1*10^0;
@@ -107,9 +107,8 @@ current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(:,xmesh,1)-sol(:,xmesh-1,1))/dx; % reaction
 current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
 current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
 current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
-current_FeCO2 = -c.F*c.A*c.D0_FeCO2*(sol(:,xmesh,5)-sol(:,xmesh-1,5))/dx;
-current_CO = -c.F*c.A*c.D0_CO*(sol(:,xmesh,8)-sol(:,xmesh-1,8))/dx;
-global_currentOld = (current_Fe2+2*current_Fe1+3*current_Fe0+100*current_CO); %+current_FeCO2
+%current_CO = 0*2*c.F*2*10^-1*sol(:,xmesh,5).*sol(:,xmesh,7);
+global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0); %+current_CO current_Fe2+2*current_Fe1+3*current_Fe0
 
 % for i = 1:tmesh
 %     t = tspan(i);
@@ -140,32 +139,32 @@ ylabel('Time t [s]');
 zlabel('Fe(II)[mol/L]');
 view(30,20);
 
-figure(3);
-surf(xspan,tspan,u3/1000.0,'edgecolor','none');
-xlim([0.0, delta]);
-%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('Fe(I)[mol/L]');
-view(30,20);
+% figure(3);
+% surf(xspan,tspan,u3/1000.0,'edgecolor','none');
+% xlim([0.0, delta]);
+% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('Fe(I)[mol/L]');
+% view(30,20);
 
-figure(4);
-surf(xspan,tspan,u4/1000.0,'edgecolor','none');
-xlim([0.0, delta]);
-%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('Fe(0)[mol/L]');
-view(30,20);
+% figure(4);
+% surf(xspan,tspan,u4/1000.0,'edgecolor','none');
+% xlim([0.0, delta]);
+% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('Fe(0)[mol/L]');
+% view(30,20);
 
-figure(5);
-surf(xspan,tspan,sol(:,:,5)/1000.0,'edgecolor','none');
-xlim([0.0, delta]);
-%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('FeCO2 [mol/L]');
-view(30,20);
+% figure(5);
+% surf(xspan,tspan,sol(:,:,5)/1000.0,'edgecolor','none');
+% xlim([0.0, delta]);
+% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('FeCO2 [mol/L]');
+% view(30,20);
 
 % figure(6);
 % surf(xspan,tspan,sol(:,:,6)/1000.0,'edgecolor','none');
@@ -177,7 +176,7 @@ view(30,20);
 % view(30,20);
 
 figure(7);
-surf(xspan,tspan,sol(:,:,7)/1000.0,'edgecolor','none');
+surf(xspan,tspan,sol(:,:,8)/1000.0,'edgecolor','none');
 xlim([0.0, delta]);
 %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
 xlabel('Distance x [m]');
@@ -192,7 +191,7 @@ view(30,20);
 % xlabel('Time t [s]');
 % legend('Fe3', 'Fe2', 'Fe1', 'Fe0'); %, 'global'
 
-figure(9)
+figure()
 plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_currentOld(floor(tmesh/2):end), 'b--'); %(floor(tmesh/2):end) 
 xlabel('E (V)');
 ylabel('Current (A)');

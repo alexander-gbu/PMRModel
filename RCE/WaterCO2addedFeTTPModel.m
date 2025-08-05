@@ -71,7 +71,7 @@ c.E0_1_0 = -2.0;
 
 function rCO2_CO = HomoReaction(C_Fe0, C_H2O, C_CO2)
     %FeTTP(0) + CO2 + H2O = FeTTP(II) + CO + 2HO-
-    kco = 4*10^-3;
+    kco = 3*10^-3;
     rCO2_CO = kco*C_Fe0.*C_H2O.*C_CO2;
 end
 
@@ -84,6 +84,37 @@ function [r3_2, r2_1, r1_0] = ElecReactions(C, E, const)
     r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
     r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
+end
+
+function [c,f,s] = pde(x,t,u,dudx,const)
+    rCO = HomoReaction(u(4), u(5), u(6));
+    c = [1; 1; 1; 1; 1; 1; 1; 1];
+    f = [const.D0_Fe3*dudx(1); const.D0_Fe2*dudx(2); const.D0_Fe1*dudx(3); const.D0_Fe0*dudx(4); ...
+            const.D0_H2O*dudx(5); const.D0_CO2*dudx(6); const.D0_CO*dudx(7); const.D0_OH*dudx(8)];
+    s = [0; rCO; 0; -rCO; -rCO; -rCO; rCO; rCO]; %we change this later so that the iron can react in the entire solution
+end
+
+function u0 = pdeic(x, c) 
+    u0 = [c.C_Fe3_i; c.C_Fe2_i; c.C_Fe1_i; c.C_Fe0_i; c.C_H2O_i; c.C_CO2_i; c.C_CO_i; c.C_OH_i];
+end
+
+function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,c)
+    if t <= c.half_cycle_time
+        E = c.E_start - c.scan_rate*t;
+    elseif (t > c.half_cycle_time) && (t <= 2*c.half_cycle_time)
+        E = c.E_end + c.scan_rate*(t-c.half_cycle_time);
+    elseif (t > 2*c.half_cycle_time) && (t <= 3*c.half_cycle_time)
+        E = c.E_start - c.scan_rate*(t-2*c.half_cycle_time);
+    elseif (t > 3*c.half_cycle_time) && (t <= 4*c.half_cycle_time)
+        E = c.E_end + c.scan_rate*(t-3*c.half_cycle_time);
+    end
+
+    [r3_2, r2_1, r1_0] = ElecReactions(ur, E, c); %formation of Fe2, formation of Fe1, formation of Fe0
+
+    ql = [0; 0; 0; 0; 0; 0; 0; 0];
+    pl = [ul(1)-c.C_Fe3_i; ul(2)-c.C_Fe2_i; ul(3)-c.C_Fe1_i; ul(4)-c.C_Fe0_i; ul(5)-c.C_H2O_i; ul(6)-c.C_CO2_i; ul(7)-c.C_CO_i; ul(8)-c.C_OH_i];
+    qr = [1; 1; 1; 1; 1; 1; 1; 1];
+    pr = [r3_2; (-r3_2+r2_1); (-r2_1+r1_0); (-r1_0); 0; 0; 0; 0]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
 end
 
 m = 0; 
@@ -102,7 +133,7 @@ current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(:,xmesh,1)-sol(:,xmesh-1,1))/dx; % reaction
 current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
 current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
 current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
-current_CO = -c.F*c.A*c.D0_CO*(sol(:,xmesh,7)-sol(:,xmesh-1,7))/dx;
+current_CO = 2*c.F*c.A*dx*4*10^-3*sol(:,xmesh,4).*sol(:,xmesh,5).*sol(:,xmesh,6);
 global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0+current_CO); %
 
 for i = 1:tmesh
@@ -200,33 +231,11 @@ legend('Experimental', 'Model');
 % title('Experimental vs Model Data');
 % legend('Experimental', 'Model');
 
-function [c,f,s] = pde(x,t,u,dudx,const)
-    rCO = HomoReaction(u(4), u(5), u(6));
-    c = [1; 1; 1; 1; 1; 1; 1; 1];
-    f = [const.D0_Fe3*dudx(1); const.D0_Fe2*dudx(2); const.D0_Fe1*dudx(3); const.D0_Fe0*dudx(4); ...
-            const.D0_H2O*dudx(5); const.D0_CO2*dudx(6); const.D0_CO*dudx(7); const.D0_OH*dudx(8)];
-    s = [0; rCO; 0; -rCO; -rCO; -rCO; rCO; rCO]; %we change this later so that the iron can react in the entire solution
-end
 
-function u0 = pdeic(x, c) 
-    u0 = [c.C_Fe3_i; c.C_Fe2_i; c.C_Fe1_i; c.C_Fe0_i; c.C_H2O_i; c.C_CO2_i; c.C_CO_i; c.C_OH_i];
-end
 
-function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,c)
-    if t <= c.half_cycle_time
-        E = c.E_start - c.scan_rate*t;
-    elseif (t > c.half_cycle_time) && (t <= 2*c.half_cycle_time)
-        E = c.E_end + c.scan_rate*(t-c.half_cycle_time);
-    elseif (t > 2*c.half_cycle_time) && (t <= 3*c.half_cycle_time)
-        E = c.E_start - c.scan_rate*(t-2*c.half_cycle_time);
-    elseif (t > 3*c.half_cycle_time) && (t <= 4*c.half_cycle_time)
-        E = c.E_end + c.scan_rate*(t-3*c.half_cycle_time);
-    end
+figure(11)
+surf(xspan,tspan,4*10^-3*sol(:,:,4).*sol(:,:,5).*sol(:,:,6),'edgecolor','none'); %(floor(nmesh/2):end)
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('Reaction Rate');
 
-    [r3_2, r2_1, r1_0] = ElecReactions(ur, E, c); %formation of Fe2, formation of Fe1, formation of Fe0
-
-    ql = [0; 0; 0; 0; 0; 0; 0; 0];
-    pl = [ul(1)-c.C_Fe3_i; ul(2)-c.C_Fe2_i; ul(3)-c.C_Fe1_i; ul(4)-c.C_Fe0_i; ul(5)-c.C_H2O_i; ul(6)-c.C_CO2_i; ul(7)-c.C_CO_i; ul(8)-c.C_OH_i];
-    qr = [1; 1; 1; 1; 1; 1; 1; 1];
-    pr = [r3_2; (-r3_2+r2_1); (-r2_1+r1_0); (-r1_0); 0; 0; 0; 0]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
-end
