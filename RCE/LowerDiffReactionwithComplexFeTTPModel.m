@@ -39,7 +39,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.001385/(rpm^0.59) % boundary layer thickness [m]
+delta = 5e-5; % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
