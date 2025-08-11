@@ -15,7 +15,7 @@ Ivar = sprintf('x%dCurrent_A_', rpm);
 ExpE = Expdata.(Evar); %E in V
 ExpI = Expdata.(Ivar); %I in A
 
-xmesh = 100;
+xmesh = 1000;
 tmesh = xmesh;
 
 % CV waveform
@@ -107,7 +107,7 @@ current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(:,xmesh,1)-sol(:,xmesh-1,1))/dx; % reaction
 current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
 current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
 current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
-%current_CO = 0*2*c.F*2*10^-1*sol(:,xmesh,5).*sol(:,xmesh,7);
+% current_CO = 2*c.F*c.A*sum(1*10^0*sol(:,:,5).*sol(:,:,6), 2)*dx;
 global_currentOld = (-current_Fe3+current_Fe1+2*current_Fe0); %+current_CO current_Fe2+2*current_Fe1+3*current_Fe0
 
 % for i = 1:tmesh
@@ -184,11 +184,11 @@ ylabel('Time t [s]');
 zlabel('CO[mol/L]');
 view(30,20);
 
-% figure(8)
-% plot(tspan,current_Fe3,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
+figure()
+plot(tspan,current_CO); % ,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
 % ylim([-10, 10]);
-% ylabel('reaction rates [mol/m2/s]');
-% xlabel('Time t [s]');
+ylabel('reaction rates [mol/m2/s]');
+xlabel('Time t [s]');
 % legend('Fe3', 'Fe2', 'Fe1', 'Fe0'); %, 'global'
 
 figure()
