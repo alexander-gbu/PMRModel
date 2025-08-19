@@ -4,8 +4,15 @@ PMR
 
 FeTTP: k0 will become a fitting parameter
 
+- Update Tylers diffusion coefficients file with the most recent updates
+- investigate if HER could be happening
+- play around with the constants so that the FeCO2 creation is limiting
+
+
 - The CO2 steals the electrons from the FeTTP. So just subtract that from the currents and then the foot should be fixed.
 - put in the equation so that you can just change the rotation rate and it fixes everything
+
+
 
 CO2R modeling:
  - improve the diffusion constants
