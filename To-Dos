@@ -4,6 +4,8 @@ PMR
 
 FeTTP: k0 will become a fitting parameter
 
+- add a current for the creation of the FeCO2 compound. this would be without having the fe2 in the main thing
+
 - Update Tylers diffusion coefficients file with the most recent updates
 - investigate if HER could be happening
 - play around with the constants so that the FeCO2 creation is limiting

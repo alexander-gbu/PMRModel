@@ -39,7 +39,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.001385/(rpm^0.59) % boundary layer thickness [m]
+delta = 0.65e-5 %0.00021/(rpm^0.439) % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
@@ -57,10 +57,10 @@ c.C_CO_i = 0;
 c.C_OH_i = 0;
 
 %"new" diffusion coefficients
-c.D0_Fe3 = 1.06e-9; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m2/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
-c.D0_Fe2 = 6.7e-9; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m2/s]
-c.D0_Fe1 = 4.6e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
-c.D0_Fe0 = 5.7e-9; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
+c.D0_Fe3 = 1.1e-10; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m2/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
+c.D0_Fe2 = 6.7e-10; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m2/s]
+c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
+c.D0_Fe0 = 5.7e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
 c.D0_FeCO2 = 4e-9; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
 c.D0_H2O = 5.78e-9; %https://doi.org/10.1007/978-3-662-54089-3
 c.D0_CO2 = 2.89e-9; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
@@ -71,44 +71,48 @@ c.E0_3_2 = -0.2; %from data
 c.E0_2_1 = -1.3;
 c.E0_1_0 = -2.08;
 
-function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_H2O, C_CO2, C_CO)
-    %FeTTP(0) + CO2 = FeTTP(II)CO2
-    kFeCO2 = 5*10^-2;
-    rFeCO2 = kFeCO2.*C_Fe0.*C_CO2;
-    %FeTTP(II)CO2 + H2O = FeTTP(II) + CO + 2HO-
-    kco = 5*10^3; %1
-    rCO2_CO = kco*C_FeCO2.*C_H2O;
-end
-
-function [r3_2, r2_1, r1_0] = ElecReactions(C, E, const)
-    k0_3_2 = 0.00002; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
-    k0_2_1 = 0.00002;% rate constant Fe(II) to Fe(I) (m/s)
-    k0_1_0 = 0.00001;
-    alpha = 0.5;
-
-    r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
-    r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
-    r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
-end
-
 m = 0; 
 xspan = linspace(0,delta,xmesh);
 tspan = linspace(0,time,tmesh);
 
-sol = pdepe(m, @(x,t,u,dudx) pde(x,t,u,dudx,c), @(x) pdeic(x,c), ...
-            @(xl,ul,xr,ur,t) pdebc(xl,ul,xr,ur,t,c), xspan, tspan);
-u1 = sol(:,:,1); %sol(t(i), x(j), component)
-u2 = sol(:,:,2);
-u3 = sol(:,:,3);
-u4 = sol(:,:,4);
+k0_3_2_array = [0.0002, 0.001];
+kFeCO2_array = [5*10^0, 5*10^3];
+kco_array = [5*10^1, 5*10^-2]; 
 
-dx = xspan(xmesh) - xspan(xmesh-1);
-current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(:,xmesh,1)-sol(:,xmesh-1,1))/dx; % reaction is at the right boundary
-current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
-current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
-current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
-%reactionrate_CO = 5*10^0*sol(:,:,5).*sol(:,:,6); % current_FeCO2 = 2*c.F*c.A*dx*5*10^-1*sol(:,:,6).*sol(:,:,7)./(1+10*sol(:,:,8));
-global_currentOld = (current_Fe2+2*current_Fe1+3*current_Fe0); %+2*current_Fe2-3*current_Fe1+sum(current_FeCO2,2) +current_CO current_Fe2+2*current_Fe1+3*current_Fe0
+for i = 1:length(k0_3_2_array)
+    i
+    for j = 1:length(kFeCO2_array)
+        j
+        for k = 1:length(kco_array)
+            k
+            c.k0_3_2 = k0_3_2_array(i);
+            c.kFeCO2 = kFeCO2_array(j);
+            c.kco = kco_array(k); 
+            
+            sol = pdepe(m, @(x,t,u,dudx) pde(x,t,u,dudx,c), @(x) pdeic(x,c), ...
+                        @(xl,ul,xr,ur,t) pdebc(xl,ul,xr,ur,t,c), xspan, tspan);
+            u1 = sol(:,:,1); %sol(t(i), x(j), component)
+            u2 = sol(:,:,2);
+            u3 = sol(:,:,3);
+            u4 = sol(:,:,4);
+
+            dx = xspan(xmesh) - xspan(xmesh-1);
+            current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(:,xmesh,1)-sol(:,xmesh-1,1))/dx; % reaction is at the right boundary
+            current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
+            current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
+            current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
+            %reactionrate_CO = 5*10^0*sol(:,:,5).*sol(:,:,6); % current_FeCO2 = 2*c.F*c.A*dx*5*10^-1*sol(:,:,6).*sol(:,:,7)./(1+10*sol(:,:,8));
+            global_currentOld = (-current_Fe3+1*current_Fe1+2*current_Fe0); %+2*current_Fe2-3*current_Fe1+sum(current_FeCO2,2) +current_CO current_Fe2+2*current_Fe1+3*current_Fe0
+
+            figure()
+            plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_currentOld(floor(tmesh/2):end), 'b--'); %(floor(tmesh/2):end) 
+            xlabel('E (V)');
+            ylabel('Current (A)');
+            title(['k0 = ' num2str(c.k0_3_2) ', kFeCO2 = ' num2str(c.kFeCO2) ', kco = ' num2str(c.kco)]);
+            legend('Experimental', 'Model');
+        end
+    end
+end
 
 % for i = 1:tmesh
 %     t = tspan(i);
@@ -184,20 +188,13 @@ global_currentOld = (current_Fe2+2*current_Fe1+3*current_Fe0); %+2*current_Fe2-3
 % zlabel('CO[mol/L]');
 % view(30,20);
 
-figure()
-surf(xspan,tspan,reactionrate_CO,'edgecolor','none'); % ,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
-% ylim([-10, 10]);
-xlabel('Distance x [m]');
-ylabel('Time t [s]');
-zlabel('reaction rates [mol/m2/s]');
+% figure()
+% surf(xspan,tspan,reactionrate_CO,'edgecolor','none'); % ,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
+% % ylim([-10, 10]);
+% xlabel('Distance x [m]');
+% ylabel('Time t [s]');
+% zlabel('reaction rates [mol/m2/s]');
 % legend('Fe3', 'Fe2', 'Fe1', 'Fe0'); %, 'global'
-
-figure()
-plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_currentOld(floor(tmesh/2):end), 'b--'); %(floor(tmesh/2):end) 
-xlabel('E (V)');
-ylabel('Current (A)');
-title('Experimental vs Model Data');
-legend('Experimental', 'Model');
 
 % figure(10)
 % plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); %(floor(nmesh/2):end)
@@ -206,8 +203,26 @@ legend('Experimental', 'Model');
 % title('Experimental vs Model Data');
 % legend('Experimental', 'Model');
 
+function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_H2O, C_CO2, C_CO, c)
+    %FeTTP(0) + CO2 = FeTTP(II)CO2
+    rFeCO2 = c.kFeCO2.*C_Fe0.*C_CO2;
+    %FeTTP(II)CO2 + H2O = FeTTP(II) + CO + 2HO-
+    rCO2_CO = c.kco*C_FeCO2.*C_H2O;
+end
+
+function [r3_2, r2_1, r1_0] = ElecReactions(C, E, const)
+    k0_3_2 = const.k0_3_2; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
+    k0_2_1 = k0_3_2;% rate constant Fe(II) to Fe(I) (m/s)
+    k0_1_0 = k0_3_2;
+    alpha = 0.5;
+
+    r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
+    r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
+    r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
+end
+
 function [c,f,s] = pde(x,t,u,dudx,const)
-    [rFeCo2, rCO] = HomoReaction(u(4), u(5), u(6), u(7), u(8));
+    [rFeCo2, rCO] = HomoReaction(u(4), u(5), u(6), u(7), u(8), const);
     c = [1; 1; 1; 1; 1; 1; 1; 1; 1];
     f = [const.D0_Fe3*dudx(1); const.D0_Fe2*dudx(2); const.D0_Fe1*dudx(3); const.D0_Fe0*dudx(4); ...
             const.D0_FeCO2*dudx(5); const.D0_H2O*dudx(6); const.D0_CO2*dudx(7); const.D0_CO*dudx(8); const.D0_OH*dudx(9)];
