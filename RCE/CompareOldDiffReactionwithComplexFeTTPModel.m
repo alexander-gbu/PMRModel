@@ -19,7 +19,7 @@ xmesh = 200;
 tmesh = xmesh;
 
 % CV waveform
-c.scan_rate = 0.2;      % V/s
+c.scan_rate = 0.1;      % V/s
 c.E_start = 0.0;
 c.E_end = -3.0;
 c.half_cycle_time = abs(c.E_end - c.E_start)/c.scan_rate;
@@ -52,7 +52,7 @@ c.C_Fe1_i = 0;   %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0;   %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 c.C_FeCO2_i = 0;
 c.C_H2O_i = 0.06*1000;      %initial water bulk concentration [mol/m3]. water does not dissociate in MeCN
-c.C_CO2_i = 0.3*1000;
+c.C_CO2_i = 0.1*1000;
 c.C_CO_i = 0;
 c.C_OH_i = 0;
 
@@ -61,9 +61,9 @@ c.D0_Fe3 = 1.1e-10; %Diffusion coefficient of CO2 in water at 25C at infinite di
 c.D0_Fe2 = 6.7e-10; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m2/s]
 c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
 c.D0_Fe0 = 5.7e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
-c.D0_FeCO2 = 4e-9; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
+c.D0_FeCO2 = 4e-10; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
 c.D0_H2O = 5.78e-9; %https://doi.org/10.1007/978-3-662-54089-3
-c.D0_CO2 = 2.89e-9; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
+c.D0_CO2 = 2.89e-11; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
 c.D0_CO = 6e-9;
 c.D0_OH = 2.1e-9;
 
@@ -75,9 +75,9 @@ m = 0;
 xspan = linspace(0,delta,xmesh);
 tspan = linspace(0,time,tmesh);
 
-k0_3_2_array = [0.0002, 0.001];
-kFeCO2_array = [5*10^0, 5*10^3];
-kco_array = [5*10^1, 5*10^-2]; 
+k0_3_2_array = [0.0002]; %, 0.001];
+kFeCO2_array = [100];
+kco_array = [800]; 
 
 for i = 1:length(k0_3_2_array)
     i
@@ -101,15 +101,47 @@ for i = 1:length(k0_3_2_array)
             current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
             current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
             current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
-            %reactionrate_CO = 5*10^0*sol(:,:,5).*sol(:,:,6); % current_FeCO2 = 2*c.F*c.A*dx*5*10^-1*sol(:,:,6).*sol(:,:,7)./(1+10*sol(:,:,8));
-            global_currentOld = (-current_Fe3+1*current_Fe1+2*current_Fe0); %+2*current_Fe2-3*current_Fe1+sum(current_FeCO2,2) +current_CO current_Fe2+2*current_Fe1+3*current_Fe0
+            reactionrate_CO = 2*c.F*c.A*dx*sum(kco_array(k)*sol(:,:,5).*sol(:,:,6),2); %     current_FeCO2 = 2*c.F*c.A*dx*5*10^-1*sol(:,:,6).*sol(:,:,7)./(1+10*sol(:,:,8));
+            reactionrate_FeCO2 = kFeCO2_array(j)*sol(:,:,4).*sol(:,:,7);
+            global_currentOld = (current_Fe2+0.65*reactionrate_CO+2*current_Fe1+3*current_Fe0); %+2*current_Fe2-3*current_Fe1+sum(current_FeCO2,2) +current_CO    -current_Fe3+reactionrate_CO+1*current_Fe1+2*current_Fe0
+            global_current = (-current_Fe3+1*current_Fe1+2*current_Fe0);
 
-            figure()
+
+            figure(1)
             plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_currentOld(floor(tmesh/2):end), 'b--'); %(floor(tmesh/2):end) 
             xlabel('E (V)');
             ylabel('Current (A)');
-            title(['k0 = ' num2str(c.k0_3_2) ', kFeCO2 = ' num2str(c.kFeCO2) ', kco = ' num2str(c.kco)]);
+            title(['co+2+2*1+3+2*0: k0 = ' num2str(c.k0_3_2) ', kFeCO2 = ' num2str(c.kFeCO2) ', kco = ' num2str(c.kco)]);
             legend('Experimental', 'Model');
+
+            figure(2)
+            plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_current(floor(tmesh/2):end), 'b--'); %(floor(tmesh/2):end) 
+            xlabel('E (V)');
+            ylabel('Current (A)');
+            title(['-3+1+2*0: k0 = ' num2str(c.k0_3_2) ', kFeCO2 = ' num2str(c.kFeCO2) ', kco = ' num2str(c.kco)]);
+            legend('Experimental', 'Model');
+
+            % figure(2)
+            % plot(E, reactionrate_CO)
+            % surf(xspan,tspan,reactionrate_CO,'edgecolor','none'); % ,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
+            % % ylim([-10, 10]);
+            % xlabel('Distance x [m]');
+            % ylabel('Time t [s]');
+            % zlabel('current reduced by FeCO2 -> Fe2 [mol/m2/s]');
+
+            figure(3)
+            plot(tspan, reactionrate_CO)
+            xlabel('Time t [s]');
+            ylabel('current reduced by FeCO2 -> Fe2 [mol/m2/s]');
+            title('rate of production of FeTTP(II)')
+
+            % figure(3)
+            % surf(xspan,tspan,reactionrate_FeCO2,'edgecolor','none'); % ,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
+            % % ylim([-10, 10]);
+            % xlabel('Distance x [m]');
+            % ylabel('Time t [s]');
+            % zlabel('reaction rates [mol/m2/s]');
+
         end
     end
 end
@@ -125,7 +157,7 @@ end
 % % current_Fe3
 % global_current = (-current_Fe3-current_Fe2-current_Fe1)/1000; %-current_Fe0
 
-% figure(1);
+% figure(4);
 % surf(xspan,tspan,u1/1000.0,'edgecolor','none');
 % xlim([0.0, delta]);
 % %title('K^{+} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.008 cm');
@@ -134,16 +166,16 @@ end
 % zlabel('Fe(III)[mol/L]');
 % view(30,20);
 
-% figure(2);
-% surf(xspan,tspan,u2/1000.0,'edgecolor','none');
-% xlim([0.0, delta]);
-% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-% xlabel('Distance x [m]');
-% ylabel('Time t [s]');
-% zlabel('Fe(II)[mol/L]');
-% view(30,20);
+figure(5);
+surf(xspan,tspan,u2/1000.0,'edgecolor','none');
+xlim([0.0, delta]);
+%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('Fe(II)[mol/L]');
+view(30,20);
 
-% figure(3);
+% figure(6);
 % surf(xspan,tspan,u3/1000.0,'edgecolor','none');
 % xlim([0.0, delta]);
 % %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
@@ -152,7 +184,7 @@ end
 % zlabel('Fe(I)[mol/L]');
 % view(30,20);
 
-% figure(4);
+% figure(7);
 % surf(xspan,tspan,u4/1000.0,'edgecolor','none');
 % xlim([0.0, delta]);
 % %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
@@ -161,17 +193,17 @@ end
 % zlabel('Fe(0)[mol/L]');
 % view(30,20);
 
-% figure(5);
-% surf(xspan,tspan,sol(:,:,5)/1000.0,'edgecolor','none');
-% xlim([0.0, delta]);
-% %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
-% xlabel('Distance x [m]');
-% ylabel('Time t [s]');
-% zlabel('FeCO2 [mol/L]');
-% view(30,20);
+figure(8);
+surf(xspan,tspan,sol(:,:,5)/1000.0,'edgecolor','none');
+xlim([0.0, delta]);
+%title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
+xlabel('Distance x [m]');
+ylabel('Time t [s]');
+zlabel('FeCO2 [mol/L]');
+view(30,20);
 
 % figure(6);
-% surf(xspan,tspan,sol(:,:,6)/1000.0,'edgecolor','none');
+% surf(xspan,tspan,sol(:,:,7)/1000.0,'edgecolor','none');
 % xlim([0.0, delta]);
 % %title('CO_{2} (x,t) in KHCO_{3} = 0.1 M, \delta = 0.01 cm');
 % xlabel('Distance x [m]');
@@ -188,14 +220,6 @@ end
 % zlabel('CO[mol/L]');
 % view(30,20);
 
-% figure()
-% surf(xspan,tspan,reactionrate_CO,'edgecolor','none'); % ,tspan,current_Fe2,tspan,current_Fe1,tspan,current_Fe0,'LineWidth',1.5); %,tspan,global_currentOld,
-% % ylim([-10, 10]);
-% xlabel('Distance x [m]');
-% ylabel('Time t [s]');
-% zlabel('reaction rates [mol/m2/s]');
-% legend('Fe3', 'Fe2', 'Fe1', 'Fe0'); %, 'global'
-
 % figure(10)
 % plot(ExpE, ExpI, 'r-', E, global_current, 'b--'); %(floor(nmesh/2):end)
 % xlabel('E (V)');
@@ -203,7 +227,7 @@ end
 % title('Experimental vs Model Data');
 % legend('Experimental', 'Model');
 
-function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_H2O, C_CO2, C_CO, c)
+function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_H2O, C_CO2, C_CO, c, C_Fe2)
     %FeTTP(0) + CO2 = FeTTP(II)CO2
     rFeCO2 = c.kFeCO2.*C_Fe0.*C_CO2;
     %FeTTP(II)CO2 + H2O = FeTTP(II) + CO + 2HO-
@@ -212,9 +236,9 @@ end
 
 function [r3_2, r2_1, r1_0] = ElecReactions(C, E, const)
     k0_3_2 = const.k0_3_2; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
-    k0_2_1 = k0_3_2;% rate constant Fe(II) to Fe(I) (m/s)
+    k0_2_1 = k0_3_2/10;% rate constant Fe(II) to Fe(I) (m/s)
     k0_1_0 = k0_3_2;
-    alpha = 0.5;
+    alpha = 0.3;
 
     r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
@@ -222,7 +246,7 @@ function [r3_2, r2_1, r1_0] = ElecReactions(C, E, const)
 end
 
 function [c,f,s] = pde(x,t,u,dudx,const)
-    [rFeCo2, rCO] = HomoReaction(u(4), u(5), u(6), u(7), u(8), const);
+    [rFeCo2, rCO] = HomoReaction(u(4), u(5), u(6), u(7), u(8), const, u(2));
     c = [1; 1; 1; 1; 1; 1; 1; 1; 1];
     f = [const.D0_Fe3*dudx(1); const.D0_Fe2*dudx(2); const.D0_Fe1*dudx(3); const.D0_Fe0*dudx(4); ...
             const.D0_FeCO2*dudx(5); const.D0_H2O*dudx(6); const.D0_CO2*dudx(7); const.D0_CO*dudx(8); const.D0_OH*dudx(9)];
