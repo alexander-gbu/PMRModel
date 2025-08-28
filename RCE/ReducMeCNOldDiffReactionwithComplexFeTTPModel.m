@@ -22,7 +22,7 @@ tmesh = xmesh;
 c.scan_rate = 0.1;      % V/s
 c.E_start = 0.0;
 c.E_end = -3.0;
-c.half_cycle_time = abs(c.E_end - c.E_start)/c.scan_rate;
+c.half_cycle_time = (c.E_start-c.E_end)/c.scan_rate;
 
 time = 4*c.half_cycle_time; %total time of experiment [s] to complete 2 full cycles
 
@@ -55,16 +55,16 @@ c.C_H2O_i = 0.06*1000;      %initial water bulk concentration [mol/m3]. water do
 c.C_CO2_i = 0.1*1000;
 c.C_CO_i = 0;
 c.C_OH_i = 0;
-c.C_MeCNR_i = 0;
+c.C_MeCNR_i = 0.1;
 
 %"new" diffusion coefficients
 c.D0_Fe3 = 1.1e-10; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m2/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
 c.D0_Fe2 = 6.7e-10; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m2/s]
 c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
 c.D0_Fe0 = 5.7e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
-c.D0_FeCO2 = 4e-9; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
+c.D0_FeCO2 = 4e-11; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
 c.D0_H2O = 5.78e-9; %https://doi.org/10.1007/978-3-662-54089-3
-c.D0_CO2 = 2.89e-9; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
+c.D0_CO2 = 2.89e-12; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
 c.D0_CO = 6e-9;
 c.D0_OH = 2.1e-9;
 c.D0_MeCNR = 1e-10;
@@ -94,11 +94,12 @@ current_Fe3 = -c.F*c.A*c.D0_Fe3*(sol(:,xmesh,1)-sol(:,xmesh-1,1))/dx; % reaction
 current_Fe2 = -c.F*c.A*c.D0_Fe2*(sol(:,xmesh,2)-sol(:,xmesh-1,2))/dx;
 current_Fe1 = -c.F*c.A*c.D0_Fe1*(sol(:,xmesh,3)-sol(:,xmesh-1,3))/dx;
 current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
-current_MeCN = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,10)-sol(:,xmesh-1,10))/dx;
+current_MeCN = -c.F*c.A*c.D0_MeCNR*(sol(:,xmesh,10)-sol(:,xmesh-1,10))/dx;
 reactionrate_CO = 2*c.F*c.A*dx*sum(c.k0_3_2*sol(:,:,5).*sol(:,:,6),2); %     current_FeCO2 = 2*c.F*c.A*dx*5*10^-1*sol(:,:,6).*sol(:,:,7)./(1+10*sol(:,:,8));
 reactionrate_FeCO2 = c.kFeCO2*sol(:,:,4).*sol(:,:,7);
 % global_currentOld = (current_Fe2+0.65*reactionrate_CO+2*current_Fe1+3*current_Fe0); %+2*current_Fe2-3*current_Fe1+sum(current_FeCO2,2) +current_CO    -current_Fe3+reactionrate_CO+1*current_Fe1+2*current_Fe0
 global_current = (-current_Fe3+1*current_Fe1+2*current_Fe0-current_MeCN);
+
 
 
 % figure(1)
@@ -234,11 +235,12 @@ function [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(C, E, const)
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
     r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
     if E < const.E0_MeCN
-        rMeCN = 0.00001;
+        rMeCN = -0.0001*(E-const.E0_MeCN);
+        % (0.001*exp(-0.8*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.8)*(E-const.E0_MeCN)*const.F/const.R/const.T));
     else
         rMeCN = 0;
     end
-    % rMeCN = 0.000001*(exp(-0.8*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.8)*(E-const.E0_MeCN)*const.F/const.R/const.T));
+    % rMeCN = 0.001*(13057*exp(-0.5*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.5)*(E-const.E0_MeCN)*const.F/const.R/const.T));
 end
 
 function [c,f,s] = pde(x,t,u,dudx,const)
@@ -260,7 +262,7 @@ function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,c)
         E = c.E_end + c.scan_rate*(t-c.half_cycle_time);
     elseif (t > 2*c.half_cycle_time) && (t <= 3*c.half_cycle_time)
         E = c.E_start - c.scan_rate*(t-2*c.half_cycle_time);
-    elseif (t > 3*c.half_cycle_time) && (t <= 4*c.half_cycle_time)
+    else %(t > 3*c.half_cycle_time) && (t <= 4*c.half_cycle_time)
         E = c.E_end + c.scan_rate*(t-3*c.half_cycle_time);
     end
 
