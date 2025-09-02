@@ -6,7 +6,7 @@ clear;
 %#ok<*GVMIS>
 %#ok<*INUSD>
 
-rpm = 400;
+rpm = 200;
 
 Expdata = readtable('FeTTPReactionsH2OCO2.xlsx');
 % Expdata.Properties.VariableNames
@@ -39,7 +39,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.4e-5 %0.00021/(rpm^0.439) % boundary layer thickness [m]
+delta = 0.65e-5 %0.00021/(rpm^0.439) % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
