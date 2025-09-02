@@ -6,7 +6,7 @@ clear;
 %#ok<*GVMIS>
 %#ok<*INUSD>
 
-rpm = 200;
+rpm = 400;
 
 Expdata = readtable('FeTTPReactionsH2OCO2.xlsx');
 % Expdata.Properties.VariableNames
@@ -39,7 +39,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.65e-5 %0.00021/(rpm^0.439) % boundary layer thickness [m]
+delta = 0.4e-5 %0.00021/(rpm^0.439) % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
@@ -55,7 +55,7 @@ c.C_H2O_i = 0.06*1000;      %initial water bulk concentration [mol/m3]. water do
 c.C_CO2_i = 0.1*1000;
 c.C_CO_i = 0;
 c.C_OH_i = 0;
-c.C_MeCNR_i = 0.1;
+c.C_MeCNR_i = 0;
 
 %"new" diffusion coefficients
 c.D0_Fe3 = 1.1e-10; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m2/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
@@ -64,7 +64,7 @@ c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite 
 c.D0_Fe0 = 5.7e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
 c.D0_FeCO2 = 4e-11; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
 c.D0_H2O = 5.78e-9; %https://doi.org/10.1007/978-3-662-54089-3
-c.D0_CO2 = 2.89e-9; %https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
+c.D0_CO2 = 2.89e-13; %e-9 is the actual thing https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
 c.D0_CO = 6e-9;
 c.D0_OH = 2.1e-9;
 c.D0_MeCNR = 1e-10;
@@ -78,10 +78,10 @@ m = 0;
 xspan = linspace(0,delta,xmesh);
 tspan = linspace(0,time,tmesh);
 
-k0_3_2_array = [0.00005, 0.0002, 0.001]; %, 0.001];
-kFeCO2_array = [10];
-kco_array = [50, 80]; 
-kMeCN_array = [0.00005, 0.0001, 0.0002];
+k0_3_2_array = 0.0002; %[0.00005, 0.0002, 0.001];
+kFeCO2_array = [3];
+kco_array = [20];  
+kMeCN_array = 4*10^-5; % [0.00005, 0.0001, 0.0002];
 
 
 for i = 1:length(k0_3_2_array)
@@ -111,7 +111,7 @@ for i = 1:length(k0_3_2_array)
                 current_Fe0 = -c.F*c.A*c.D0_Fe0*(sol(:,xmesh,4)-sol(:,xmesh-1,4))/dx;
                 current_MeCN = -c.F*c.A*c.D0_MeCNR*(sol(:,xmesh,10)-sol(:,xmesh-1,10))/dx;
                 % global_currentOld = (current_Fe2+2*current_Fe1+3*current_Fe0-current_MeCN);
-                global_current = (-current_Fe3+1*current_Fe1+2*current_Fe0-current_MeCN);
+                global_current = (-current_Fe3+1*current_Fe1+2*current_Fe0+current_MeCN);
 
                 % figure()
                 % plot(ExpE, ExpI, 'r-', E(floor(tmesh/2):end), global_currentOld(floor(tmesh/2):end), 'b--'); %(floor(tmesh/2):end) 
@@ -126,13 +126,45 @@ for i = 1:length(k0_3_2_array)
                     ylabel('Current (A)');
                     title(['-mecn-3+1+2*0: k0 = ' num2str(c.k0_3_2) ', kFeCO2 = ' num2str(c.kFeCO2) ', kco = ' num2str(c.kco) ', kMeCN = ' num2str(c.kMeCN)]);
                     legend('Experimental', 'Model');    
+                    ylim([-2e-2, 1e-3]);
                 catch ME
+                    figure()
+                    n = size(global_current);
+                    plot(ExpE, ExpI, 'r-', E(1:n), global_current(1:n), 'b--'); %(floor(tmesh/2):end) 
+                    xlabel('E (V)');
+                    ylabel('Current (A)');
+                    title(['-mecn-3+1+2*0: k0 = ' num2str(c.k0_3_2) ', kFeCO2 = ' num2str(c.kFeCO2) ', kco = ' num2str(c.kco) ', kMeCN = ' num2str(c.kMeCN)]);
+                    legend('Experimental', 'Model');  
                     warning(ME.identifier, '%s', ME.message);
                 end
             end
         end
     end
 end
+
+% figure()
+% test = 0.00001*(exp(-0.5*(E-c.E0_MeCN)*c.F/c.R/c.T)-(sol(:,xmesh,10).').*exp((1-0.5)*(E-c.E0_MeCN)*c.F/c.R/c.T));
+% plot(E, test)
+% xlabel('E (V)');
+% ylabel('MeCN reaction');
+
+
+% test2 = 0.0001*exp(-0.5*(E-c.E0_MeCN)*c.F/c.R/c.T);
+% figure()
+% plot(E, test2)
+% xlabel('E (V)');
+% ylabel('MeCN reaction');
+
+% test3 = exp((1-0.5)*(E-c.E0_MeCN)*c.F/c.R/c.T);
+% figure()
+% plot(E, test3)
+% xlabel('E (V)');
+% ylabel('MeCN reaction');
+
+% figure()
+% plot(E, sol(:,xmesh,10).')
+% xlabel('E (V)');
+% ylabel('MeCNR concentration');
 
 % reactionrate_CO = 2*c.F*c.A*dx*sum(c.k0_3_2*sol(:,:,5).*sol(:,:,6),2); %     current_FeCO2 = 2*c.F*c.A*dx*5*10^-1*sol(:,:,6).*sol(:,:,7)./(1+10*sol(:,:,8));
 % reactionrate_FeCO2 = c.kFeCO2*sol(:,:,4).*sol(:,:,7);
@@ -223,18 +255,17 @@ function [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(C, E, const)
     k0_3_2 = const.k0_3_2; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002                     higher reaction rates mean steaper slopes
     k0_2_1 = k0_3_2;% rate constant Fe(II) to Fe(I) (m/s)
     k0_1_0 = k0_3_2;
-    alpha = 0.3;
+    alpha = 0.5;
 
     r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
     r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
-    if E < const.E0_MeCN
-        rMeCN = -const.kMeCN*(E-const.E0_MeCN);
-        % (0.001*exp(-0.8*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.8)*(E-const.E0_MeCN)*const.F/const.R/const.T));
-    else
-        rMeCN = 0;
-    end
-    % rMeCN = 0.001*(13057*exp(-0.5*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.5)*(E-const.E0_MeCN)*const.F/const.R/const.T));
+    rMeCN = const.kMeCN*(exp(-0.2*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.2)*(E-const.E0_MeCN)*const.F/const.R/const.T));
+    % if E < const.E0_MeCN
+    %     rMeCN = -const.kMeCN*(E-const.E0_MeCN);
+    % else
+    %     rMeCN = 0;
+    % end
 end
 
 function [c,f,s] = pde(x,t,u,dudx,const)
@@ -265,5 +296,5 @@ function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,c)
     ql = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
     pl = [ul(1)-c.C_Fe3_i; ul(2)-c.C_Fe2_i; ul(3)-c.C_Fe1_i; ul(4)-c.C_Fe0_i; ul(5)-c.C_FeCO2_i; ul(6)-c.C_H2O_i; ul(7)-c.C_CO2_i; ul(8)-c.C_CO_i; ul(9)-c.C_OH_i; ul(10)-c.C_MeCNR_i];
     qr = [1; 1; 1; 1; 1; 1; 1; 1; 1; 1];
-    pr = [r3_2; (-r3_2+r2_1); (-r2_1+r1_0); (-r1_0); 0; 0; 0; 0; 0; rMeCN]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
+    pr = [r3_2; (-r3_2+r2_1); (-r2_1+r1_0); (-r1_0); 0; 0; 0; 0; 0; -rMeCN]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
 end
