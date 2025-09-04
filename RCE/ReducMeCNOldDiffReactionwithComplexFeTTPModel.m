@@ -260,7 +260,7 @@ function [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(C, E, const)
     r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
     r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
-    rMeCN = 0; const.kMeCN*(exp(-0.2*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.2)*(E-const.E0_MeCN)*const.F/const.R/const.T));
+    rMeCN = const.kMeCN*(exp(-0.2*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.2)*(E-const.E0_MeCN)*const.F/const.R/const.T));
     % if E < const.E0_MeCN
     %     rMeCN = -const.kMeCN*(E-const.E0_MeCN);
     % else
