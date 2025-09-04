@@ -64,7 +64,7 @@ c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite 
 c.D0_Fe0 = 5.7e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
 c.D0_FeCO2 = 4e-11; %                                            GUESSED PARAMETER THIS WILL PROBABLY NEED TO BE ADJUSTED
 c.D0_H2O = 5.78e-9; %https://doi.org/10.1007/978-3-662-54089-3
-c.D0_CO2 = 2.89e-13; %e-9 is the actual thing https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
+c.D0_CO2 = 2.89e-9; %e-9 is the actual thing https://pubs.acs.org/doi/full/10.1021/acs.jpcc.3c03992
 c.D0_CO = 6e-9;
 c.D0_OH = 2.1e-9;
 c.D0_MeCNR = 1e-10;
@@ -260,7 +260,7 @@ function [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(C, E, const)
     r3_2 = k0_3_2*(C(1)*exp(-alpha*(E-const.E0_3_2)*const.F/const.R/const.T)-C(2)*exp((1-alpha)*(E-const.E0_3_2)*const.F/const.R/const.T)); %mol/s/m2
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
     r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
-    rMeCN = const.kMeCN*(exp(-0.2*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.2)*(E-const.E0_MeCN)*const.F/const.R/const.T));
+    rMeCN = 0; const.kMeCN*(exp(-0.2*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.2)*(E-const.E0_MeCN)*const.F/const.R/const.T));
     % if E < const.E0_MeCN
     %     rMeCN = -const.kMeCN*(E-const.E0_MeCN);
     % else
