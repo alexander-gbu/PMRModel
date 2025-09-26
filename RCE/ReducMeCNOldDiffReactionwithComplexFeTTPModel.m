@@ -6,7 +6,7 @@ clear;
 %#ok<*GVMIS>
 %#ok<*INUSD>
 
-rpm = 200;
+rpm = 100;
 
 Expdata = readtable('FeTTPReactionsH2OCO2.xlsx');
 % Expdata.Properties.VariableNames
@@ -15,13 +15,13 @@ Ivar = sprintf('x%dCurrent_A_', rpm);
 ExpE = Expdata.(Evar); %E in V
 ExpI = Expdata.(Ivar); %I in A
 
-xmesh = 200;
+xmesh = 800;
 tmesh = xmesh;
 
 % CV waveform
 c.scan_rate = 0.1;      % V/s
 c.E_start = 0.0;
-c.E_end = -3.0;
+c.E_end = -2.5;
 c.half_cycle_time = (c.E_start-c.E_end)/c.scan_rate;
 
 time = 4*c.half_cycle_time; %total time of experiment [s] to complete 2 full cycles
@@ -39,7 +39,7 @@ E4 = c.E_end + c.scan_rate * t_half;
 E = [E1, E2, E3, E4];
 
 %Constants
-delta = 0.65e-5 %0.00021/(rpm^0.439) % boundary layer thickness [m]
+delta = 7.2e-5/(rpm^0.444) % boundary layer thickness [m]
 
 c.T = 298.0;
 c.F = 96485.333; % in C/mol or A*s/mol
