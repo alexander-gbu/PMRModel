@@ -7,6 +7,15 @@ clear;
 %#ok<*GVMIS>
 %#ok<*INUSD>
 
+% SS outlet concentrations
+% flowrate CO2
+% height
+% 60sccm
+% V = 360cm3
+% 10cm diameter
+% 5cm headspace
+% 8cm liqiud
+
 L = 1.0;        % length (m)
 D = 0.1;       % diffusion coefficient (m^2/s)
 a = 1;        % flux coefficient at left boundary
@@ -32,32 +41,32 @@ sol = pdepe(m, ...
 C = sol(:,:,1);
 
 % ----- PLOTS -----
-figure;
+figure(1);
 surf(x, t, C, 'EdgeColor','none');
 xlabel('x'); ylabel('t'); zlabel('C');
 title('Diffusion with Robin + Flux Boundary');
 view(45,30); colorbar;
 
-figure;
+figure(2);
 plot(x, C(end,:), 'LineWidth', 2);
 xlabel('x'); ylabel('C');
 title('Steady-state concentration profile');
 grid on;
 
-figure;
+figure(3);
 plot(t, C(:,1),'LineWidth',2); hold on
 plot(t, C(:,end),'--','LineWidth',2);
-legend('Left boundary C(0,t)', 'Right boundary C(L,t)');
+legend('Outlet concentration C(0,t)', 'Liquid concentration C(L,t)');
 xlabel('Time'); ylabel('C');
 title('Boundary concentrations vs time');
 grid on;
 
-figure;
+figure(4);
 plot(t, C(:,1), 'LineWidth', 2);
 xlabel('Time');
 ylabel('C(0,t)');
-title('Concentration at Left Boundary vs Time');
-grid on;
+title('Outlet Concentration vs Time');
+grid off;
 
 function [c,f,s] = pdefun(x,t,u,DuDx,params)
     D = params.D;
