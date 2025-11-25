@@ -16,31 +16,28 @@ CcoEXP = [117, 638, 1364, 1596, 1725, 1779]; %ppm
 p.P = 5; %bar
 T = 293; %K
 
-D = 7; %cm
 Fstand = 50; %standard cm3/min
 p.F = Fstand/p.P; %actual cm3/min
 p.C0co2 = p.P/(83.1446*T);
 p.C0co = 0;
-p.SAliq = pi*(D/2)^2;
-Vtot = 360; %total volume of reactor cm3
-GLratio = 4/6; %ratio of gas:liquid volume in cstr
-p.Vgas = Vtot*(GLratio/(GLratio+1)); %cm3
-p.Vliq = Vtot-p.Vgas; %cm3
-p.R = 0.015*0.93*60/(2*96485) %mol/min
+p.Vgas = 165; %cm3 approximated based on inserts
+p.Vliq = 180; %cm3
+p.SAliq = p.Vliq/6.66; %cm2
+p.R = 0.015*1*60/(2*96485); %mol/min
 kG = 0; % cm/min Gas mass transfer coefficient
 kL = 0; % cm/min Liquid mass transfer coefficient
 p.HCO = 9.5e-5; %mol/cm3 bar Henrys constant for CO
 p.HCO2 = 3.3e-5; %mol/cm3 bar Henrys constant CO2
-p.K = 0.2; % = kG*kL/(H*kL+kG) in cm/min mass transfer coeffienct for co in water 0.14 mm/s
+p.K = 0.5; % = kG*kL/(H*kL+kG) in cm/min mass transfer coeffienct for co in water 0.14 mm/s
 
 %moles [liq co2, liq co, gas co2, gas co]
 n0 = [p.P*p.HCO2*p.Vliq; 0; p.C0co2*p.Vgas; 0]
-tend = 100; %minutes
-tnum = 10000;
+tend = 250; %minutes
+tnum = 100000;
 tspan = linspace(0, tend, tnum); %minutes
 p.dt = tend/tnum;
 
-[t, n] = ode45(@(t, n) ode(t, n, p), tspan, n0);
+[t, n] = ode15s(@(t, n) ode(t, n, p), tspan, n0);
 
 function dCdt = ode(t, n, p)
 
