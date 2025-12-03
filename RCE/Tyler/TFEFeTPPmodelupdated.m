@@ -52,7 +52,7 @@ c.C_Fe2_i = 0;              %initial Fe(II) bulk concentration at t=0 in [mol/m3
 c.C_Fe1_i = 0;   %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0;   %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 c.C_FeCO2_i = 0;
-c.C_TFE_i = 1*0.06*1000;  
+c.C_TFE_i = 1*0.12*1000;  
 c.C_TFER_i = 0;    %initial water bulk concentration [mol/m3]. water does not dissociate in MeCN
 c.C_CO2_i = 1*0.314*1000;
 c.C_CO_i = 0;
@@ -87,7 +87,7 @@ k0_3_2_array = 0.0002; %[0.00005, 0.0002, 0.001];
 kFeCO2_array = [20];
 kco_array = [0.008];  
 c.kMeCN = 1.1e-8;% [0.55*8e-6, 4.4e-7]; % [0.00005, 0.0001, 0.0002];
-kTFE_array = [1e-10];
+kTFE_array = [1e-3];
 
 
 for i = 1:length(k0_3_2_array)
@@ -101,7 +101,7 @@ for i = 1:length(k0_3_2_array)
                 c.k0_3_2 = k0_3_2_array(i);
                 c.kFeCO2 = kFeCO2_array(j);
                 c.kco = kco_array(k); 
-                c.kTFE = kTFE_array(l);
+                c.kTFER = kTFE_array(l);
 
                 sol = pdepe(m, @(x,t,u,dudx) pde(x,t,u,dudx,c), @(x) pdeic(x,c), ...
                             @(xl,ul,xr,ur,t) pdebc(xl,ul,xr,ur,t,c), xspan, tspan);
@@ -295,14 +295,16 @@ end
 % zlabel('CO[mol/L]');
 % view(30,20);
 E5=transpose(E);
-function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_TFE, C_CO2, C_CO, c)
+function [rFeCO2, rCO, rFeTFE] = HomoReaction(C_Fe0, C_FeCO2, C_TFE, C_CO2, C_CO, c)
     %FeTTP(0) + CO2 = FeTTP(II)CO2
     rFeCO2 = c.kFeCO2.*C_Fe0.*C_CO2;
+    %FeTTP(0) + TFE = FeTTP(I) + TFER (the reduced version of TFE)
+    rFeTFE = c.kTFER*C_Fe0*C_TFE;
     %FeTTP(II)CO2 + H2O = FeTTP(II) + CO + 2HO-
-    rCO2_CO = c.kco*C_FeCO2.*(C_TFE)^2;
+    rCO = c.kco*C_FeCO2.*(C_TFE)^2;
 end
 
-function [r3_2, r2_1, r1_0, rMeCN, rTFE] = ElecReactions(C, E, const)
+function [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(C, E, const)
     k0_3_2 = const.k0_3_2*1; % rate constant Fe(III) to Fe(II) (m/s)                 %0.00002 higher reaction rates mean steeper slopes
     k0_2_1 = k0_3_2*1;% rate constant Fe(II) to Fe(I) (m/s)
     k0_1_0 = k0_3_2*1;
@@ -312,15 +314,14 @@ function [r3_2, r2_1, r1_0, rMeCN, rTFE] = ElecReactions(C, E, const)
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
     r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
     rMeCN = const.kMeCN*(exp(-alpha*(E-const.E0_MeCN)*const.F/const.R/const.T)-0*C(10)*exp((1-alpha)*(E-const.E0_MeCN)*const.F/const.R/const.T)); % reduction of MeCN on GC
-    rTFE = const.kTFE*(C(6)*exp(-alpha*(E-const.E0_TFE)*const.F/const.R/const.T)-0*C(11)*exp((1-alpha)*(E-const.E0_TFE)*const.F/const.R/const.T)); % reduction of TFE on GC
 end
 
 function [c,f,s] = pde(x,t,u,dudx,const)
-    [rFeCo2, rCO] = HomoReaction(u(4), u(5), u(6), u(7), u(8), const);
+    [rFeCo2, rCO, rTFER] = HomoReaction(u(4), u(5), u(6), u(7), u(8), const);
     c = [1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1];
     f = [const.D0_Fe3*dudx(1); const.D0_Fe2*dudx(2); const.D0_Fe1*dudx(3); const.D0_Fe0*dudx(4); const.D0_FeCO2*dudx(5); ...
             const.D0_TFE*dudx(6); const.D0_CO2*dudx(7); const.D0_CO*dudx(8); const.D0_OH*dudx(9); const.D0_MeCNR*dudx(10); const.D0_TFER*dudx(11)];
-    s = [0; rCO; 0; -rFeCo2; rFeCo2-rCO; -rFeCo2; -rCO; rCO; rCO; 0; 0]; %we change this later so that the iron can react in the entire solution
+    s = [0; rCO; rTFER; -rFeCo2-rTFER; rFeCo2-rCO; -rFeCo2-rTFER; -rCO; rCO; rCO; 0; rTFER]; %we change this later so that the iron can react in the entire solution
 end
 
 function u0 = pdeic(x, c) 
@@ -338,11 +339,11 @@ function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,c)
         E = c.E_end + c.scan_rate*(t-3*c.half_cycle_time);
     end
 
-    [r3_2, r2_1, r1_0, rMeCN, rTFE] = ElecReactions(ur, E, c); %formation of Fe2, formation of Fe1, formation of Fe0
+    [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(ur, E, c); %formation of Fe2, formation of Fe1, formation of Fe0
 
     ql = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
     pl = [ul(1)-c.C_Fe3_i; ul(2)-c.C_Fe2_i; ul(3)-c.C_Fe1_i; ul(4)-c.C_Fe0_i; ul(5)-c.C_FeCO2_i; ul(6)-c.C_TFE_i; 
           ul(7)-c.C_CO2_i; ul(8)-c.C_CO_i; ul(9)-c.C_OH_i; ul(10)-c.C_MeCNR_i; ul(11)-c.C_TFER_i];
     qr = [1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1];
-    pr = [r3_2; (-r3_2+r2_1); (-r2_1+r1_0); (-r1_0); 0; rTFE; 0; 0; 0; -rMeCN; -rTFE]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
+    pr = [r3_2; (-r3_2+r2_1); (-r2_1+r1_0); (-r1_0); 0; 0; 0; 0; 0; -rMeCN; 0]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
 end
