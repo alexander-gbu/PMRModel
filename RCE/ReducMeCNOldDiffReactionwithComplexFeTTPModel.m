@@ -51,13 +51,13 @@ c.C_Fe2_i = 0;              %initial Fe(II) bulk concentration at t=0 in [mol/m3
 c.C_Fe1_i = 0;   %initial Fe(I) bulk concentration at t=0 in [mol/m3] units
 c.C_Fe0_i = 0;   %initial Fe(0) bulk concentration at t=0 in [mol/m3] units
 c.C_FeCO2_i = 0;
-c.C_H2O_i = 0.06*1000;      %initial water bulk concentration [mol/m3]. water does not dissociate in MeCN
+c.C_TFE_i = 0.06*1000;      %initial water bulk concentration [mol/m3]. water does not dissociate in MeCN
 c.C_CO2_i = 0.1*1000;
 c.C_CO_i = 0;
 c.C_OH_i = 0;
 c.C_MeCNR_i = 0;
 
-%"new" diffusion coefficients
+%Diffusion coefficients
 c.D0_Fe3 = 1.1e-10; %Diffusion coefficient of CO2 in water at 25C at infinite dilution [m2/s]                  e-10 if have adjusted diffusion coefficient. it is somewhere between e-10 and e-11
 c.D0_Fe2 = 6.7e-10; %Diffusion coefficient of (CO3)2- in water at 25C at infinite dilution [m2/s]
 c.D0_Fe1 = 4.6e-10; %Diffusion coefficient of HCO3- in water at 25C at infinite dilution [m2/s]
@@ -244,11 +244,11 @@ end
 % zlabel('CO[mol/L]');
 % view(30,20);
 
-function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_H2O, C_CO2, C_CO, c)
+function [rFeCO2, rCO2_CO] = HomoReaction(C_Fe0, C_FeCO2, C_TFE, C_CO2, C_CO, c)
     %FeTTP(0) + CO2 = FeTTP(II)CO2
     rFeCO2 = c.kFeCO2.*C_Fe0.*C_CO2;
     %FeTTP(II)CO2 + H2O = FeTTP(II) + CO + 2HO-
-    rCO2_CO = c.kco*C_FeCO2.*C_H2O;
+    rCO2_CO = c.kco*C_FeCO2.*C_TFE^2;
 end
 
 function [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(C, E, const)
@@ -261,6 +261,7 @@ function [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(C, E, const)
     r2_1 = k0_2_1*(C(2)*exp(-alpha*(E-const.E0_2_1)*const.F/const.R/const.T)-C(3)*exp((1-alpha)*(E-const.E0_2_1)*const.F/const.R/const.T));
     r1_0 = k0_1_0*(C(3)*exp(-alpha*(E-const.E0_1_0)*const.F/const.R/const.T)-C(4)*exp((1-alpha)*(E-const.E0_1_0)*const.F/const.R/const.T));
     rMeCN = const.kMeCN*(exp(-0.2*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.2)*(E-const.E0_MeCN)*const.F/const.R/const.T));
+    rTFE = const.kTFE*(exp(-0.2*(E-const.E0_MeCN)*const.F/const.R/const.T)-C(10)*exp((1-0.2)*(E-const.E0_MeCN)*const.F/const.R/const.T));
     % if E < const.E0_MeCN
     %     rMeCN = -const.kMeCN*(E-const.E0_MeCN);
     % else
@@ -277,7 +278,7 @@ function [c,f,s] = pde(x,t,u,dudx,const)
 end
 
 function u0 = pdeic(x, c) 
-    u0 = [c.C_Fe3_i; c.C_Fe2_i; c.C_Fe1_i; c.C_Fe0_i; c.C_FeCO2_i; c.C_H2O_i; c.C_CO2_i; c.C_CO_i; c.C_OH_i; c.C_MeCNR_i];
+    u0 = [c.C_Fe3_i; c.C_Fe2_i; c.C_Fe1_i; c.C_Fe0_i; c.C_FeCO2_i; c.C_TFE_i; c.C_CO2_i; c.C_CO_i; c.C_OH_i; c.C_MeCNR_i];
 end
 
 function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,c)
@@ -294,7 +295,7 @@ function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,c)
     [r3_2, r2_1, r1_0, rMeCN] = ElecReactions(ur, E, c); %formation of Fe2, formation of Fe1, formation of Fe0
 
     ql = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
-    pl = [ul(1)-c.C_Fe3_i; ul(2)-c.C_Fe2_i; ul(3)-c.C_Fe1_i; ul(4)-c.C_Fe0_i; ul(5)-c.C_FeCO2_i; ul(6)-c.C_H2O_i; ul(7)-c.C_CO2_i; ul(8)-c.C_CO_i; ul(9)-c.C_OH_i; ul(10)-c.C_MeCNR_i];
+    pl = [ul(1)-c.C_Fe3_i; ul(2)-c.C_Fe2_i; ul(3)-c.C_Fe1_i; ul(4)-c.C_Fe0_i; ul(5)-c.C_FeCO2_i; ul(6)-c.C_TFE_i; ul(7)-c.C_CO2_i; ul(8)-c.C_CO_i; ul(9)-c.C_OH_i; ul(10)-c.C_MeCNR_i];
     qr = [1; 1; 1; 1; 1; 1; 1; 1; 1; 1];
     pr = [r3_2; (-r3_2+r2_1); (-r2_1+r1_0); (-r1_0); 0; 0; 0; 0; 0; -rMeCN]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
 end
