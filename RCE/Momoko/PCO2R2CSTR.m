@@ -9,7 +9,7 @@ close all;
 %dC/dt = F/V*(Cin - C) - nFE/RT
 %   where here C = [C1co2, C1co, C2co2, C2co]
 
-% 5 bar experimental data
+% Experimental data
 PEXP = [5, 10, 20, 25];
 tEXP =  [10, 30, 50, 70, 90, 110, 0, 0;
          0, 30, 50, 70, 90, 110, 130, 0;
