@@ -105,4 +105,3 @@ function dCdt = ode(t, n, p)
 
     dCdt = [dnco2liq; dncoliq; dnco2gas; dncogas];
 end
-

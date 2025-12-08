@@ -1,6 +1,6 @@
 clc;
 clear;
-% close all;
+close all;
 
 %#ok<*NUSED>
 %#ok<*GVMIS>
@@ -24,25 +24,26 @@ h = 7; %guessed as 7cm
 tend = 200; %minutes
 
 p.P = 5;
-T = 293; %K
+p.T = 293; %K
+p.gasConst = 83.1446; %bar cm3/mol K
 Fstand = 50; %standard cm3/min
 p.F = Fstand/p.P; %actual cm3/min
 p.C0co = 0;
 p.Vgas = 165; %cm3 approximated based on inserts
 p.Vliq = 180; %cm3
 p.SAliq = p.Vliq/6.66; %cm2
-SA = p.SAliq;
-p.R = 0.015*1.2*60/(2*96485); %mol/min
+p.R = 0.015*1.2*60/(2*96485)/p.Vliq; %mol/min
 kG = 0; % cm/min Gas mass transfer coefficient
 kL = 0; % cm/min Liquid mass transfer coefficient
-p.HCO = 9.5e-5; %mol/cm3 bar Henrys constant for CO
-p.HCO2 = 3.3e-5; %mol/cm3 bar Henrys constant CO2
-p.D0co = 1e-2; %guessed
-p.K = 0.25; % = kG*kL/(H*kL+kG) in cm/min mass transfer coeffienct for co in water 0.14 mm/s
-p.v0 = p.F/SA;
+p.Hco = 9.5e-5; %mol/cm3 bar Henrys solubility constant for CO
+p.Hco2 = 3.3e-5; %mol/cm3 bar Henrys solubility constant CO2
+p.D0co = 1e-1; %guessed
+p.D0coliq = 1e3;
+p.K = 0.1; % = kG*kL/(H*kL+kG) in cm/min mass transfer coeffienct for co in water 0.14 mm/s
+p.v0 = p.F/p.SAliq;
 
 xmesh = 100;
-tmesh = xmesh;
+tmesh = 100;
 xspan = linspace(0,h,xmesh);
 tspan = linspace(0,tend,tmesh);
 m = 0;
@@ -50,7 +51,7 @@ m = 0;
 Conc = pdepe(m, @(x,t,u,dudx) pde(x,t,u,dudx,p), @(x) pdeic(x,p), ...
         @(xl,ul,xr,ur,t) pdebc(xl,ul,xr,ur,t,p), xspan, tspan); %sol(t(i), x(j), component)
 molcos = Conc*p.F;
-totmol = p.P/(83.1446*T)*p.F; %total concentration * volume flow = tot mol / s
+totmol = p.P/(p.gasConst*p.T)*p.F; %total concentration * volume flow = tot mol / s
 ppms = molcos/totmol * 1e6; %in the future totmol will just be sum of all species
 
 figure();
@@ -64,19 +65,26 @@ legend('CO in liq', 'CO in gas', 'Location', 'southeast');
 figure();
 surf(xspan, tspan, ppms(:, :, 1), 'edgecolor','none');
 
+figure();
+surf(xspan, tspan, ppms(:, :, 2), 'edgecolor','none');
+
 function [c,f,s] = pde(x,t,u,dudx,p)
     c = [1; 1];
-    f = [1000*dudx(1); p.D0co*dudx(1)];
-    s = [p.R; -p.v0*dudx(1)];
+    f = [p.D0coliq*dudx(1); p.D0co*dudx(2)];
+    s = [p.R; -p.v0*dudx(2)];
 end
 
 function u0 = pdeic(x, p) 
-    u0 = [p.P*p.HCO2*p.Vliq; p.C0co];
+    u0 = [0; 0];
 end
 
 function [pl,ql,pr,qr] = pdebc(xl,ul,xr,ur,t,p)
-    ql = [1; 0];
-    pl = [0; ul(2) - ul(1)*p.HCO];
+    J = p.K*(p.gasConst*p.T*ul(2) - ur(1)/p.Hco);
+    % if J < 0
+    %     'J is negative'
+    % end
+    ql = [1; 1];
+    pl = [0; -J];
     qr = [1; 1];
-    pr = [0; 0]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
+    pr = [-J; 0]; % f = -D*dC/dx = r     [m2/s] [mol/m3]/[m] = [mol/m2/s]; 
 end
